@@ -1,0 +1,1856 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Treasure Hunter · 摸金背单词</title>
+  <style>
+    :root {
+      --cave-bg: linear-gradient(135deg, #2d1b0a 0%, #1a0d05 100%);
+      --treasure-gold: #ffd700;
+      --treasure-bronze: #cd7f32;
+      --treasure-silver: #c0c0c0;
+      --treasure-diamond: #b9f2ff;
+      --ancient-stone: #4a4a4a;
+      --parchment: #f4e4bc;
+      --shadow-dark: rgba(0,0,0,0.8);
+      --glow-gold: 0 0 20px rgba(255,215,0,0.5);
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--cave-bg);
+      font-family: 'Georgia', 'Times New Roman', serif;
+      color: var(--parchment);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(255,215,0,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,215,0,0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(255,255,255,0.02) 0%, transparent 50%);
+    }
+    
+    #game-container {
+      width: min(95vw, 600px);
+      background: linear-gradient(145deg, #3d2914, #2a1a0a);
+      border-radius: 20px;
+      border: 3px solid var(--treasure-gold);
+      box-shadow: 
+        var(--glow-gold),
+        inset 0 2px 10px rgba(255,215,0,0.1),
+        0 20px 40px var(--shadow-dark);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    #game-container::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--treasure-gold), var(--treasure-bronze), var(--treasure-gold));
+      z-index: -1;
+      border-radius: 20px;
+    }
+    
+    .header {
+      background: linear-gradient(90deg, var(--treasure-gold), #ffed4a, var(--treasure-gold));
+      color: #2d1b0a;
+      padding: 15px 25px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      border-bottom: 2px solid var(--treasure-bronze);
+    }
+    
+    .stats-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      padding: 20px 25px;
+      background: linear-gradient(180deg, #4a3219, #3d2914);
+      border-bottom: 1px solid var(--treasure-bronze);
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 10px;
+      background: linear-gradient(145deg, #5a4028, #4a3219);
+      border-radius: 15px;
+      border: 2px solid var(--treasure-bronze);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    .stat-icon {
+      font-size: 24px;
+      margin-bottom: 5px;
+      display: block;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+      text-shadow: 0 0 10px rgba(255,215,0,0.5);
+    }
+    
+    .treasure-chamber {
+      padding: 30px 25px;
+      text-align: center;
+      background: radial-gradient(circle at center, #4a3219, #3d2914);
+      position: relative;
+    }
+    
+    .treasure-chest {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(145deg, #8b4513, #a0522d);
+      border: 4px solid var(--treasure-gold);
+      border-radius: 15px 15px 25px 25px;
+      margin: 0 auto 20px;
+      position: relative;
+      box-shadow: var(--glow-gold);
+      animation: treasureGlow 3s infinite alternate;
+    }
+    
+    @keyframes treasureGlow {
+      0% { box-shadow: var(--glow-gold); }
+      100% { box-shadow: 0 0 30px rgba(255,215,0,0.8); }
+    }
+    
+    .treasure-chest::before {
+      content: '💎';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 40px;
+      animation: sparkle 2s infinite;
+    }
+    
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    }
+    
+    .treasure-info {
+      background: rgba(116, 88, 48, 0.6);
+      border: 2px solid var(--treasure-gold);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px 0;
+      backdrop-filter: blur(5px);
+    }
+    
+    .treasure-name {
+      font-size: 36px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .treasure-phonetic {
+      font-size: 18px;
+      color: var(--treasure-silver);
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+    
+    .treasure-description {
+      font-size: 16px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+    
+    .treasure-value {
+      display: inline-block;
+      background: linear-gradient(45deg, var(--treasure-gold), #ffed4a);
+      color: #2d1b0a;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      margin-top: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    
+    .action-buttons {
+      display: grid;
+      gap: 15px;
+      padding: 25px;
+      background: linear-gradient(180deg, #3d2914, #2d1b0a);
+    }
+    
+    .treasure-btn {
+      padding: 15px;
+      border: none;
+      border-radius: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      font-family: inherit;
+    }
+    
+    .speak-btn {
+      background: linear-gradient(145deg, var(--treasure-gold), #ffed4a);
+      color: #2d1b0a;
+      border: 3px solid var(--treasure-bronze);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .speak-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    }
+    
+    .speak-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .manual-input {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .manual-input input {
+      flex: 1;
+      padding: 15px;
+      border: 2px solid var(--treasure-bronze);
+      border-radius: 12px;
+      background: rgba(74, 57, 25, 0.8);
+      color: var(--parchment);
+      font-size: 16px;
+      font-family: inherit;
+    }
+    
+    .manual-input input:focus {
+      outline: none;
+      border-color: var(--treasure-gold);
+      box-shadow: 0 0 10px rgba(255,215,0,0.3);
+    }
+    
+    .submit-btn {
+      background: linear-gradient(145deg, var(--treasure-silver), #e8e8e8);
+      color: #2d1b0a;
+      border: 2px solid var(--ancient-stone);
+      padding: 15px 25px;
+      border-radius: 12px;
+    }
+    
+    .submit-btn:hover {
+      background: linear-gradient(145deg, #e8e8e8, var(--treasure-silver));
+      transform: translateY(-1px);
+    }
+    
+    .feedback {
+      padding: 20px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--treasure-bronze);
+      background: rgba(45, 27, 10, 0.5);
+    }
+    
+    .feedback.success {
+      color: var(--treasure-gold);
+      text-shadow: 0 0 10px rgba(255,215,0,0.5);
+      animation: successPulse 0.6s ease-out;
+    }
+    
+    .feedback.error {
+      color: #ff6b6b;
+      text-shadow: 0 0 10px rgba(255,107,107,0.5);
+    }
+    
+    @keyframes successPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideInRight {
+      0% {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes coinSpin {
+      0% { transform: rotateY(0deg); }
+      100% { transform: rotateY(360deg); }
+    }
+    
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+    
+    @keyframes modalSlideIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.7) translateY(-50px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    /* 页面加载动画 */
+    #game-container {
+      animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .stats-bar {
+      animation: slideInRight 0.6s ease-out 0.2s both;
+    }
+    
+    .treasure-chamber {
+      animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+    
+    .action-buttons {
+      animation: fadeInUp 0.6s ease-out 0.6s both;
+    }
+    
+    /* 获得金币动画 */
+    .coin-earned {
+      animation: coinSpin 0.5s ease-out;
+    }
+    
+    /* 庆祝动画 */
+    .celebrate {
+      animation: celebrate 0.6s ease-out;
+    }
+    
+    /* 商店模态动画 */
+    .shop-content {
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    .shop-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(145deg, var(--treasure-gold), #ffed4a);
+      border: 3px solid var(--treasure-bronze);
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: var(--glow-gold);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .shop-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    /* Unit Selector Styles */
+    .unit-selector {
+      background: linear-gradient(135deg, #4a3219, #3d2914);
+      border-bottom: 2px solid var(--treasure-bronze);
+      padding: 15px 20px;
+    }
+    
+    .unit-title {
+      color: var(--treasure-gold);
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    
+    .unit-grid.expanded {
+      max-height: 400px;
+    }
+    
+    .unit-card {
+      background: linear-gradient(145deg, rgba(116, 88, 48, 0.6), rgba(74, 57, 25, 0.8));
+      border: 2px solid var(--treasure-bronze);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .unit-card:hover {
+      border-color: var(--treasure-gold);
+      background: linear-gradient(145deg, rgba(116, 88, 48, 0.8), rgba(74, 57, 25, 1));
+      transform: translateY(-2px);
+    }
+    
+    .unit-card.active {
+      border-color: var(--treasure-gold);
+      background: linear-gradient(145deg, var(--treasure-gold), #ffed4a);
+      color: #2d1b0a;
+      box-shadow: var(--glow-gold);
+    }
+    
+    .unit-card.completed {
+      background: linear-gradient(145deg, var(--treasure-silver), #e8e8e8);
+      border-color: var(--treasure-silver);
+    }
+    
+    .unit-icon {
+      font-size: 20px;
+      margin-bottom: 5px;
+      display: block;
+    }
+    
+    .unit-name {
+      font-size: 12px;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+    
+    .unit-progress {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--treasure-gold);
+      color: #2d1b0a;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    
+    .unit-toggle {
+      background: linear-gradient(145deg, var(--treasure-bronze), #8b4513);
+      border: none;
+      color: var(--parchment);
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 0 auto;
+      display: block;
+      transition: all 0.3s ease;
+    }
+    
+    .unit-toggle:hover {
+      background: linear-gradient(145deg, var(--treasure-gold), #ffed4a);
+      color: #2d1b0a;
+    }
+    
+    .current-unit-display {
+      background: rgba(116, 88, 48, 0.4);
+      border: 1px solid var(--treasure-bronze);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .reset-unit-btn {
+      background: linear-gradient(145deg, #ff6b6b, #ff8e53);
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    
+    .reset-unit-btn:hover {
+      background: linear-gradient(145deg, #ff8e53, #ff6b6b);
+    }
+    
+    .pronunciation-btn {
+      background: linear-gradient(145deg, #9c88ff, #6c5ce7);
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .pronunciation-btn:hover {
+      background: linear-gradient(145deg, #6c5ce7, #9c88ff);
+      transform: translateY(-1px);
+    }
+    
+    .pronunciation-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    @media (max-width: 480px) {
+      .unit-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+      }
+      
+      .unit-card {
+        padding: 8px;
+      }
+      
+      .unit-icon {
+        font-size: 16px;
+      }
+      
+      .unit-name {
+        font-size: 11px;
+      }
+    }
+    
+    #compat-msg {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      border: 2px solid #ff4757;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 1000;
+    }
+    
+    /* Shop Modal */
+    .shop-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+
+    .shop-content {
+      background: linear-gradient(145deg, #3d2914, #2a1a0a);
+      border: 3px solid var(--treasure-gold);
+      border-radius: 20px;
+      width: min(90vw, 500px);
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: var(--glow-gold);
+    }
+
+    .shop-header {
+      background: linear-gradient(90deg, var(--treasure-gold), #ffed4a, var(--treasure-gold));
+      color: #2d1b0a;
+      padding: 15px 25px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 17px 17px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .shop-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #2d1b0a;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shop-items {
+      padding: 20px;
+    }
+
+    .shop-item {
+      background: rgba(116, 88, 48, 0.3);
+      border: 2px solid var(--treasure-bronze);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .shop-item:hover {
+      background: rgba(116, 88, 48, 0.5);
+      border-color: var(--treasure-gold);
+    }
+
+    .shop-item-icon {
+      font-size: 30px;
+      width: 50px;
+      text-align: center;
+    }
+
+    .shop-item-info {
+      flex: 1;
+    }
+
+    .shop-item-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+      margin-bottom: 5px;
+    }
+
+    .shop-item-desc {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 8px;
+    }
+
+    .shop-item-price {
+      font-size: 14px;
+      color: var(--treasure-gold);
+      font-weight: bold;
+    }
+
+    .shop-buy-btn {
+      background: linear-gradient(145deg, var(--treasure-gold), #ffed4a);
+      color: #2d1b0a;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .shop-buy-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .shop-buy-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .inventory-info {
+      background: rgba(74, 57, 25, 0.6);
+      border: 1px solid var(--treasure-bronze);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .inventory-title {
+      color: var(--treasure-gold);
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .owned-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .owned-item {
+      background: rgba(255, 215, 0, 0.2);
+      border: 1px solid var(--treasure-gold);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .stats-bar {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 15px 20px;
+      }
+      .treasure-name { font-size: 28px; }
+      .action-buttons { padding: 20px; }
+      
+      .shop-content {
+        width: 95vw;
+        margin: 10px;
+      }
+      
+      .shop-item {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="compat-msg"></div>
+  
+  <div id="game-container">
+    <div class="header">🏺 摸金背单词大师 🏺</div>
+    
+    <!-- Unit Selector -->
+    <div class="unit-selector">
+      <div class="unit-title">📚 选择学习单元</div>
+      <div class="current-unit-display" id="current-unit-display">
+        <span id="current-unit-info">🎯 当前：全部单元混合模式</span>
+        <button class="reset-unit-btn" id="reset-unit-btn">重置</button>
+      </div>
+      <button class="unit-toggle" id="unit-toggle">展开单元选择</button>
+      <div class="unit-grid" id="unit-grid"></div>
+    </div>
+    
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-icon">💰</span>
+        <div class="stat-label">金币</div>
+        <div class="stat-value" id="coins">500</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">⚡</span>
+        <div class="stat-label">等级</div>
+        <div class="stat-value" id="level">1</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">💎</span>
+        <div class="stat-label">宝物</div>
+        <div class="stat-value" id="treasures">0</div>
+      </div>
+    </div>
+    
+    <div class="treasure-chamber">
+      <div class="treasure-chest" id="treasure-chest"></div>
+      
+      <div class="treasure-info">
+        <div class="treasure-name" id="treasure-name">Ancient Relic</div>
+        <div class="treasure-phonetic" id="treasure-phonetic">/ˈeɪnʃənt ˈrɛlɪk/</div>
+        <div class="treasure-description" id="treasure-description">
+          A mysterious artifact from ancient civilizations, waiting to be claimed by brave treasure hunters.
+        </div>
+        <div class="treasure-value" id="treasure-value">价值: 50金币</div>
+        <button class="pronunciation-btn" id="pronunciation-btn">🔊 听发音</button>
+      </div>
+    </div>
+    
+    <div class="action-buttons">
+      <button class="treasure-btn speak-btn" id="speak-btn">
+        🎙️ 说出宝物真名，获得宝藏
+      </button>
+      
+      <div class="manual-input">
+        <input type="text" id="manual-input" placeholder="或者在此输入宝物的英文名称...">
+        <button class="treasure-btn submit-btn" id="submit-btn">🔍 鉴定</button>
+      </div>
+    </div>
+    
+    <div class="feedback" id="feedback">
+      准备好了吗？说出宝物的英文名称来获得它吧！
+    </div>
+  </div>
+  
+  <button class="shop-btn" id="shop-btn" title="宝物商店">🏪</button>
+
+  <!-- Shop Modal -->
+  <div class="shop-modal" id="shop-modal">
+    <div class="shop-content">
+      <div class="shop-header">
+        <span>🏪 神秘宝物商店</span>
+        <button class="shop-close" id="shop-close">×</button>
+      </div>
+      <div class="shop-items">
+        <div class="inventory-info">
+          <div class="inventory-title">💰 当前金币: <span id="shop-coins">500</span></div>
+          <div class="inventory-title">🎒 已拥有道具:</div>
+          <div class="owned-items" id="owned-items">
+            <span class="owned-item">暂无道具</span>
+          </div>
+        </div>
+        <div id="shop-items-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- DOM Elements ---
+      const ui = {
+        coins: document.getElementById('coins'),
+        level: document.getElementById('level'),
+        treasures: document.getElementById('treasures'),
+        treasureChest: document.getElementById('treasure-chest'),
+        treasureName: document.getElementById('treasure-name'),
+        treasurePhonetic: document.getElementById('treasure-phonetic'),
+        treasureDescription: document.getElementById('treasure-description'),
+        treasureValue: document.getElementById('treasure-value'),
+        feedback: document.getElementById('feedback'),
+        speakBtn: document.getElementById('speak-btn'),
+        manualInput: document.getElementById('manual-input'),
+        submitBtn: document.getElementById('submit-btn'),
+        shopBtn: document.getElementById('shop-btn'),
+        compatMsg: document.getElementById('compat-msg'),
+        shopModal: document.getElementById('shop-modal'),
+        shopClose: document.getElementById('shop-close'),
+        shopCoins: document.getElementById('shop-coins'),
+        ownedItems: document.getElementById('owned-items'),
+        shopItemsContainer: document.getElementById('shop-items-container'),
+        // Unit selector elements
+        unitToggle: document.getElementById('unit-toggle'),
+        unitGrid: document.getElementById('unit-grid'),
+        currentUnitInfo: document.getElementById('current-unit-info'),
+        resetUnitBtn: document.getElementById('reset-unit-btn'),
+        pronunciationBtn: document.getElementById('pronunciation-btn'),
+      };
+
+      // --- Audio System ---
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      function playSound(type, frequency = 440, duration = 200) {
+        if (!audioContext) return;
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        switch(type) {
+          case 'success':
+            // 成功音效 - 上升音调
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + duration / 1000);
+            oscillator.type = 'sine';
+            break;
+          case 'error':
+            // 错误音效 - 下降音调
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + duration / 1000);
+            oscillator.type = 'sawtooth';
+            break;
+          case 'coin':
+            // 金币音效 - 清脆音调
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+            oscillator.type = 'square';
+            duration = 150;
+            break;
+          case 'click':
+            // 点击音效 - 短促音调
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+            oscillator.type = 'triangle';
+            duration = 100;
+            break;
+          case 'level':
+            // 升级音效 - 三重音调
+            playLevelUpSound();
+            return;
+        }
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration / 1000);
+      }
+      
+      function playLevelUpSound() {
+        // 升级音效 - 三个音符组成的旋律
+        const notes = [523, 659, 784]; // C5, E5, G5
+        notes.forEach((freq, i) => {
+          setTimeout(() => playSound('success', freq, 300), i * 200);
+        });
+      }
+
+      // --- Game State ---
+      const state = {
+        coins: 500,
+        level: 1,
+        treasuresFound: 0,
+        recognizing: false,
+        currentTreasureIndex: 0,
+        inventory: [],
+        ownedItems: [],
+        activeEffects: {
+          goldMultiplier: 1,
+          hintAvailable: false,
+          expBoost: 1
+        },
+        // Unit system
+        selectedUnit: null, // null = all units mixed
+        unitProgress: {}, // track progress for each unit
+        unitGridExpanded: false
+      };
+
+      // --- Shop Items ---
+      const SHOP_ITEMS = [
+        {
+          id: 'gold_potion',
+          name: '💎 黄金药水',
+          desc: '接下来5个宝藏的金币奖励翻倍',
+          price: 300,
+          icon: '💎',
+          effect: 'gold_boost',
+          uses: 5
+        },
+        {
+          id: 'hint_crystal',
+          name: '🔮 提示水晶',
+          desc: '可以查看当前宝物的首字母提示',
+          price: 150,
+          icon: '🔮',
+          effect: 'hint',
+          uses: 3
+        },
+        {
+          id: 'exp_amulet',
+          name: '⚡ 经验护符',
+          desc: '升级所需宝物数量减少1个（永久）',
+          price: 500,
+          icon: '⚡',
+          effect: 'exp_boost',
+          uses: 1,
+          permanent: true
+        },
+        {
+          id: 'luck_charm',
+          name: '🍀 幸运符咒',
+          desc: '发音错误时有50%几率不扣金币',
+          price: 200,
+          icon: '🍀',
+          effect: 'luck',
+          uses: 10
+        },
+        {
+          id: 'voice_enhancer',
+          name: '🎙️ 语音增强器',
+          desc: '提高语音识别准确度（降低识别门槛）',
+          price: 400,
+          icon: '🎙️',
+          effect: 'voice_boost',
+          uses: 1,
+          permanent: true
+        }
+      ];
+
+      // --- 按单元组织的单词库 (人教版7年级上册) ---
+      const UNIT_TREASURES = {
+        unit1: {
+          name: "Unit 1 - 初次相遇",
+          icon: "👋",
+          words: [
+            { name: 'name', ipa: '/neɪm/', desc: '记录身份的神秘符文', value: 20, icon: '📛' },
+            { name: 'nice', ipa: '/naɪs/', desc: '带来愉悦的温暖宝石', value: 25, icon: '😊' },
+            { name: 'meet', ipa: '/miːt/', desc: '连接心灵的桥梁', value: 25, icon: '🤝' },
+            { name: 'hello', ipa: '/həˈloʊ/', desc: '开启友谊大门的魔法咒语', value: 20, icon: '👋' },
+            { name: 'hi', ipa: '/haɪ/', desc: '简单却温暖的问候之光', value: 15, icon: '🌟' },
+            { name: 'good', ipa: '/ɡʊd/', desc: '蕴含善良力量的古老词汇', value: 25, icon: '✨' },
+            { name: 'morning', ipa: '/ˈmɔːrnɪŋ/', desc: '曙光初现的希望时刻', value: 40, icon: '🌅' },
+            { name: 'afternoon', ipa: '/ˌæftərˈnuːn/', desc: '阳光正盛的活力时光', value: 50, icon: '☀️' },
+            { name: 'evening', ipa: '/ˈiːvnɪŋ/', desc: '夕阳西下的宁静时分', value: 45, icon: '🌆' },
+            { name: 'thanks', ipa: '/θæŋks/', desc: '感恩之心的美好回响', value: 35, icon: '🙏' },
+            { name: 'fine', ipa: '/faɪn/', desc: '完美状态的光明印记', value: 25, icon: '👌' },
+            { name: 'ok', ipa: '/ˌoʊˈkeɪ/', desc: '确认同意的简洁符号', value: 15, icon: '✅' }
+          ]
+        },
+        unit2: {
+          name: "Unit 2 - 家庭成员",
+          icon: "👨‍👩‍👧‍👦",
+          words: [
+            { name: 'family', ipa: '/ˈfæməli/', desc: '血脉相连的温暖港湾', value: 35, icon: '👨‍👩‍👧‍👦' },
+            { name: 'father', ipa: '/ˈfɑːðər/', desc: '如山般坚实的守护者', value: 35, icon: '👨' },
+            { name: 'mother', ipa: '/ˈmʌðər/', desc: '如海般深情的呵护者', value: 35, icon: '👩' },
+            { name: 'parents', ipa: '/ˈperənts/', desc: '生命起源的创造者们', value: 40, icon: '👨‍👩' },
+            { name: 'sister', ipa: '/ˈsɪstər/', desc: '心灵相通的玫瑰花', value: 35, icon: '👭' },
+            { name: 'brother', ipa: '/ˈbrʌðər/', desc: '并肩作战的战友', value: 40, icon: '👬' },
+            { name: 'grandfather', ipa: '/ˈɡrænfɑːðər/', desc: '智慧长者的慈祥光辉', value: 60, icon: '👴' },
+            { name: 'grandmother', ipa: '/ˈɡrænmʌðər/', desc: '温暖怀抱的慈爱长辈', value: 65, icon: '👵' },
+            { name: 'uncle', ipa: '/ˈʌŋkəl/', desc: '亲情纽带的可靠支柱', value: 30, icon: '👨‍🦲' },
+            { name: 'aunt', ipa: '/ænt/', desc: '温柔关怀的长辈明珠', value: 25, icon: '👩‍🦳' },
+            { name: 'cousin', ipa: '/ˈkʌzən/', desc: '童年玩伴的亲情纽带', value: 35, icon: '👫' },
+            { name: 'friend', ipa: '/frend/', desc: '患难与共的珍贵宝藏', value: 35, icon: '👫' }
+          ]
+        },
+        unit3: {
+          name: "Unit 3 - 神奇数字",
+          icon: "🔢",
+          words: [
+            { name: 'zero', ipa: '/ˈzɪroʊ/', desc: '万物起源的空无之数', value: 25, icon: '0️⃣' },
+            { name: 'one', ipa: '/wʌn/', desc: '独一无二的力量源泉', value: 20, icon: '1️⃣' },
+            { name: 'two', ipa: '/tuː/', desc: '平衡宇宙的双子力量', value: 20, icon: '2️⃣' },
+            { name: 'three', ipa: '/θriː/', desc: '三生万物的神秘数字', value: 25, icon: '3️⃣' },
+            { name: 'four', ipa: '/fɔːr/', desc: '四方守护的稳固基石', value: 25, icon: '4️⃣' },
+            { name: 'five', ipa: '/faɪv/', desc: '五行相生的元素之力', value: 25, icon: '5️⃣' },
+            { name: 'six', ipa: '/sɪks/', desc: '六合之内的无限可能', value: 20, icon: '6️⃣' },
+            { name: 'seven', ipa: '/ˈsevən/', desc: '七星连珠的幸运数字', value: 30, icon: '7️⃣' },
+            { name: 'eight', ipa: '/eɪt/', desc: '八卦循环的永恒密码', value: 30, icon: '8️⃣' },
+            { name: 'nine', ipa: '/naɪn/', desc: '九重天外的至高力量', value: 25, icon: '9️⃣' },
+            { name: 'ten', ipa: '/ten/', desc: '十全十美的圆满之数', value: 20, icon: '🔟' },
+            { name: 'phone', ipa: '/foʊn/', desc: '传递千里音信的神器', value: 30, icon: '📞' },
+            { name: 'number', ipa: '/ˈnʌmbər/', desc: '宇宙密码的数字奥秘', value: 35, icon: '🔢' },
+            { name: 'card', ipa: '/kɑːrd/', desc: '记录重要信息的魔法卡片', value: 25, icon: '🃏' }
+          ]
+        },
+        unit4: {
+          name: "Unit 4 - 缤纷色彩",
+          icon: "🎨",
+          words: [
+            { name: 'color', ipa: '/ˈkʌlər/', desc: '为世界染色的神奇画笔', value: 30, icon: '🎨' },
+            { name: 'red', ipa: '/red/', desc: '如火焰般炽热的激情', value: 20, icon: '🔴' },
+            { name: 'yellow', ipa: '/ˈjeloʊ/', desc: '阳光般温暖的光芒', value: 35, icon: '🟡' },
+            { name: 'green', ipa: '/ɡriːn/', desc: '生机勃勃的自然之力', value: 30, icon: '🟢' },
+            { name: 'blue', ipa: '/bluː/', desc: '深邃如海的宁静之源', value: 25, icon: '🔵' },
+            { name: 'black', ipa: '/blæk/', desc: '神秘夜空的无尽深度', value: 30, icon: '⚫' },
+            { name: 'white', ipa: '/waɪt/', desc: '纯洁如雪的光明之心', value: 30, icon: '⚪' },
+            { name: 'purple', ipa: '/ˈpɜːrpəl/', desc: '高贵典雅的皇室色彩', value: 35, icon: '🟣' },
+            { name: 'brown', ipa: '/braʊn/', desc: '大地母亲的温暖怀抱', value: 30, icon: '🟤' },
+            { name: 'orange', ipa: '/ˈɔːrɪndʒ/', desc: '秋日夕阳的温柔光辉', value: 35, icon: '🟠' },
+            { name: 'pink', ipa: '/pɪŋk/', desc: '少女心中的浪漫梦想', value: 25, icon: '🩷' },
+            { name: 'gray', ipa: '/ɡreɪ/', desc: '云雾缭绕的中性之美', value: 25, icon: '🩶' }
+          ]
+        },
+        unit5: {
+          name: "Unit 5 - 求学之路",
+          icon: "🎓",
+          words: [
+            { name: 'school', ipa: '/skuːl/', desc: '智慧传承的神圣殿堂', value: 60, icon: '🏫' },
+            { name: 'teacher', ipa: '/ˈtiːtʃər/', desc: '点亮心灵的知识明灯', value: 70, icon: '👨‍🏫' },
+            { name: 'student', ipa: '/ˈstuːdənt/', desc: '渴望知识的求索者', value: 75, icon: '👨‍🎓' },
+            { name: 'classroom', ipa: '/ˈklæsruːm/', desc: '知识花园的培育温室', value: 85, icon: '🏛️' },
+            { name: 'subject', ipa: '/ˈsʌbdʒɪkt/', desc: '学问海洋的一叶扁舟', value: 75, icon: '📚' },
+            { name: 'lesson', ipa: '/ˈlesən/', desc: '智慧传授的珍贵时光', value: 35, icon: '📖' },
+            { name: 'chinese', ipa: '/ˌtʃaɪˈniːz/', desc: '五千年文明的语言瑰宝', value: 80, icon: '🀄' },
+            { name: 'english', ipa: '/ˈɪŋɡlɪʃ/', desc: '连接世界的语言桥梁', value: 80, icon: '🇬🇧' },
+            { name: 'math', ipa: '/mæθ/', desc: '逻辑思维的数字王国', value: 25, icon: '🔢' },
+            { name: 'history', ipa: '/ˈhɪstəri/', desc: '时间长河的记忆宝库', value: 85, icon: '📜' },
+            { name: 'geography', ipa: '/dʒiˈɑːɡrəfi/', desc: '探索大地奥秘的指南针', value: 95, icon: '🗺️' },
+            { name: 'science', ipa: '/ˈsaɪəns/', desc: '解开宇宙密码的钥匙', value: 85, icon: '🔬' }
+          ]
+        },
+        unit6: {
+          name: "Unit 6 - 时光印记",
+          icon: "🗓️",
+          words: [
+            { name: 'birthday', ipa: '/ˈbɜːrθdeɪ/', desc: '生命诞生的纪念圣日', value: 85, icon: '🎂' },
+            { name: 'january', ipa: '/ˈdʒænjueri/', desc: '新年伊始的希望之月', value: 90, icon: '📅' },
+            { name: 'february', ipa: '/ˈfebrueri/', desc: '爱意绵绵的浪漫之月', value: 95, icon: '💝' },
+            { name: 'march', ipa: '/mɑːrtʃ/', desc: '万物复苏的春天序曲', value: 30, icon: '🌸' },
+            { name: 'april', ipa: '/ˈeɪprəl/', desc: '春花烂漫的美好时光', value: 30, icon: '🌷' },
+            { name: 'may', ipa: '/meɪ/', desc: '青春洋溢的活力之月', value: 20, icon: '🌺' },
+            { name: 'june', ipa: '/dʒuːn/', desc: '夏日炎炎的激情岁月', value: 25, icon: '☀️' },
+            { name: 'july', ipa: '/dʒuˈlaɪ/', desc: '骄阳似火的热情之月', value: 25, icon: '🏖️' },
+            { name: 'august', ipa: '/ˈɔːɡəst/', desc: '秋意渐浓的收获前奏', value: 35, icon: '🌾' },
+            { name: 'september', ipa: '/sepˈtembər/', desc: '金秋送爽的丰收之月', value: 50, icon: '🍁' },
+            { name: 'october', ipa: '/ɑːkˈtoʊbər/', desc: '金桂飘香的收获季节', value: 90, icon: '🍂' },
+            { name: 'november', ipa: '/noʊˈvembər/', desc: '感恩回馈的温暖之月', value: 95, icon: '🦃' },
+            { name: 'december', ipa: '/dɪˈsembər/', desc: '年终岁末的祈愿之月', value: 90, icon: '🎄' }
+          ]
+        },
+        unit7: {
+          name: "Unit 7 - 华美衣装",
+          icon: "👗",
+          words: [
+            { name: 'clothes', ipa: '/kloʊðz/', desc: '包裹身体的华美外衣', value: 75, icon: '👗' },
+            { name: 'trousers', ipa: '/ˈtraʊzərz/', desc: '双腿护甲的实用战袍', value: 85, icon: '👖' },
+            { name: 'sweater', ipa: '/ˈswetər/', desc: '温暖如春的编织拥抱', value: 80, icon: '🧥' },
+            { name: 'shirt', ipa: '/ʃɜːrt/', desc: '优雅身姿的贴身伙伴', value: 30, icon: '👔' },
+            { name: 'shoes', ipa: '/ʃuːz/', desc: '足下生风的行走伙伴', value: 30, icon: '👞' },
+            { name: 'socks', ipa: '/sɑːks/', desc: '足部温暖的柔软守护', value: 25, icon: '🧦' },
+            { name: 'hat', ipa: '/hæt/', desc: '头顶风采的时尚装饰', value: 20, icon: '👒' },
+            { name: 'jacket', ipa: '/ˈdʒækɪt/', desc: '外出必备的保护铠甲', value: 35, icon: '🧥' },
+            { name: 'dress', ipa: '/dres/', desc: '优雅女性的美丽象征', value: 30, icon: '👗' },
+            { name: 'skirt', ipa: '/skɜːrt/', desc: '飘逸如花的女性专属', value: 30, icon: '👗' }
+          ]
+        },
+        unit8: {
+          name: "Unit 8 - 食物盛宴",
+          icon: "🍽️",
+          words: [
+            { name: 'food', ipa: '/fuːd/', desc: '维持生命的珍贵养料', value: 25, icon: '🍽️' },
+            { name: 'breakfast', ipa: '/ˈbrekfəst/', desc: '开启一天的能量源泉', value: 50, icon: '🥐' },
+            { name: 'lunch', ipa: '/lʌntʃ/', desc: '午间补给的营养盛宴', value: 30, icon: '🍱' },
+            { name: 'dinner', ipa: '/ˈdɪnər/', desc: '夜幕降临的丰盛聚餐', value: 35, icon: '🍽️' },
+            { name: 'apple', ipa: '/ˈæpəl/', desc: '智慧果园的甜美诱惑', value: 25, icon: '🍎' },
+            { name: 'banana', ipa: '/bəˈnænə/', desc: '热带阳光的黄金果实', value: 35, icon: '🍌' },
+            { name: 'orange', ipa: '/ˈɔːrɪndʒ/', desc: '维C丰富的橙色精灵', value: 35, icon: '🍊' },
+            { name: 'milk', ipa: '/mɪlk/', desc: '纯白如雪的营养甘露', value: 25, icon: '🥛' },
+            { name: 'bread', ipa: '/bred/', desc: '麦香浓郁的生活主食', value: 30, icon: '🍞' },
+            { name: 'chicken', ipa: '/ˈtʃɪkɪn/', desc: '蛋白质丰富的美味珍品', value: 40, icon: '🍗' },
+            { name: 'rice', ipa: '/raɪs/', desc: '东方文明的主食瑰宝', value: 25, icon: '🍚' },
+            { name: 'water', ipa: '/ˈwɔːtər/', desc: '生命之源的纯净液体', value: 20, icon: '💧' }
+          ]
+        },
+        unit9: {
+          name: "Unit 9 - 星期轮回",
+          icon: "📅",
+          words: [
+            { name: 'monday', ipa: '/ˈmʌndeɪ/', desc: '新周开始的奋斗之日', value: 35, icon: '📅' },
+            { name: 'tuesday', ipa: '/ˈtuːzdeɪ/', desc: '战神护佑的勇猛之日', value: 40, icon: '⚔️' },
+            { name: 'wednesday', ipa: '/ˈwenzdeɪ/', desc: '智慧之神的启示之日', value: 50, icon: '🧠' },
+            { name: 'thursday', ipa: '/ˈθɜːrzdeɪ/', desc: '雷神之锤的力量之日', value: 45, icon: '⚡' },
+            { name: 'friday', ipa: '/ˈfraɪdeɪ/', desc: '爱神眷顾的浪漫之日', value: 35, icon: '💖' },
+            { name: 'saturday', ipa: '/ˈsætərdeɪ/', desc: '农神赐福的丰收之日', value: 50, icon: '🌾' },
+            { name: 'sunday', ipa: '/ˈsʌndeɪ/', desc: '太阳神照耀的光明之日', value: 35, icon: '☀️' },
+            { name: 'today', ipa: '/təˈdeɪ/', desc: '当下此刻的珍贵时光', value: 30, icon: '📍' },
+            { name: 'tomorrow', ipa: '/təˈmɑːroʊ/', desc: '充满希望的未来之日', value: 45, icon: '🌅' },
+            { name: 'yesterday', ipa: '/ˈjestərdeɪ/', desc: '已成回忆的昨日时光', value: 50, icon: '📸' },
+            { name: 'weekend', ipa: '/ˌwiːkˈend/', desc: '放松身心的休息时光', value: 40, icon: '🏖️' }
+          ]
+        }
+      };
+
+      // 生成兼容的难度分级系统 (保持向后兼容)
+      const TREASURES = {
+        bronze: [],
+        silver: [],
+        gold: [
+          { name: 'mysterious', ipa: '/mɪˈstɪəriəs/', desc: '充满未知魔力的神秘物品', value: 200, icon: '🎭' },
+          { name: 'magnificent', ipa: '/mægˈnɪfəsənt/', desc: '令人叹为观止的华丽宝物', value: 250, icon: '👑' },
+          { name: 'extraordinary', ipa: '/ɪkˈstrɔːrdəˌnɛri/', desc: '超越凡俗的非凡圣器', value: 300, icon: '✨' },
+          { name: 'archaeological', ipa: '/ˌɑːrkiəˈlɒdʒɪkəl/', desc: '考古学家梦寐以求的文物', value: 350, icon: '🏛️' },
+          { name: 'philosopher', ipa: '/fəˈlɒsəfər/', desc: '哲学家的贤者之石', value: 280, icon: '💎' }
+        ],
+        diamond: [
+          { name: 'incomprehensible', ipa: '/ˌɪnkɒmprɪˈhɛnsəbəl/', desc: '超越人类理解的终极神器', value: 500, icon: '🌟' },
+          { name: 'transcendental', ipa: '/ˌtrænsɛnˈdɛntəl/', desc: '超越物质世界的精神宝藏', value: 600, icon: '🔱' },
+          { name: 'metamorphosis', ipa: '/ˌmɛtəˈmɔːrfəsɪs/', desc: '能够改变一切的变形法器', value: 550, icon: '🦋' },
+          { name: 'philosophical', ipa: '/ˌfɪləˈsɒfɪkəl/', desc: '包含宇宙真理的智慧结晶', value: 650, icon: '🧿' },
+          { name: 'pronunciation', ipa: '/prəˌnʌnsiˈeɪʃən/', desc: '掌控语言魔法的发音宝典', value: 700, icon: '📖' }
+        ]
+      };
+
+      // 初始化兼容性数据 - 将单元单词按价值分配到不同难度
+      function initializeTreasures() {
+        // Clear existing arrays
+        TREASURES.bronze = [];
+        TREASURES.silver = [];
+        
+        // Distribute words from units by value ranges
+        Object.values(UNIT_TREASURES).forEach(unitData => {
+          unitData.words.forEach(word => {
+            if (word.value <= 40) {
+              TREASURES.bronze.push(word);
+            } else if (word.value <= 100) {
+              TREASURES.silver.push(word);
+            }
+            // Keep gold and diamond as advanced words
+          });
+        });
+      }
+
+      // 获取当前难度等级的宝物 (仅用于向后兼容)
+      function getCurrentTreasureLevel() {
+        if (state.level <= 5) return 'bronze';
+        if (state.level <= 10) return 'silver';
+        if (state.level <= 15) return 'gold';
+        return 'diamond';
+      }
+
+      // --- Speech Recognition Setup ---
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      let recognizer = null;
+      let permissionGranted = false;
+      
+      if (SpeechRecognition && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(() => {
+            permissionGranted = true;
+            ui.feedback.textContent = '🎙️ 麦克风权限已获取，开始你的寻宝之旅！';
+          })
+          .catch(() => {
+            ui.compatMsg.textContent = '🚫 需要麦克风权限才能进行语音识别寻宝';
+            ui.compatMsg.style.display = 'block';
+          });
+      }
+
+      if (SpeechRecognition) {
+        recognizer = new SpeechRecognition();
+        recognizer.lang = 'en-US';
+        recognizer.continuous = false;
+        recognizer.interimResults = false;
+
+        recognizer.onstart = () => {
+          state.recognizing = true;
+          ui.speakBtn.textContent = '🎯 正在识别魔咒...';
+          ui.speakBtn.disabled = true;
+          ui.feedback.textContent = '📢 大声说出宝物的英文名称...';
+          ui.feedback.className = 'feedback';
+        };
+
+        recognizer.onresult = (event) => {
+          const spokenText = event.results[0][0].transcript;
+          checkTreasureName(spokenText);
+        };
+
+        recognizer.onerror = (event) => {
+          ui.feedback.textContent = `💥 魔咒识别失败: ${event.error}`;
+          ui.feedback.className = 'feedback error';
+        };
+
+        recognizer.onend = () => {
+          state.recognizing = false;
+          ui.speakBtn.textContent = '🎙️ 说出宝物真名，获得宝藏';
+          ui.speakBtn.disabled = false;
+        };
+      } else {
+        ui.compatMsg.textContent = '⚠️ 浏览器不支持语音识别，请使用手动输入';
+        ui.compatMsg.style.display = 'block';
+        ui.speakBtn.style.display = 'none';
+      }
+
+      // --- Shop Functions ---
+      function renderShop() {
+        ui.shopCoins.textContent = state.coins;
+        
+        // 渲染拥有的道具
+        if (state.ownedItems.length === 0) {
+          ui.ownedItems.innerHTML = '<span class="owned-item">暂无道具</span>';
+        } else {
+          ui.ownedItems.innerHTML = state.ownedItems
+            .map(item => `<span class="owned-item">${item.icon} ${item.name} (${item.uses > 0 ? item.uses + '次' : '永久'})</span>`)
+            .join('');
+        }
+        
+        // 渲染商品
+        ui.shopItemsContainer.innerHTML = SHOP_ITEMS.map(item => {
+          const canAfford = state.coins >= item.price;
+          const alreadyOwned = state.ownedItems.some(owned => owned.id === item.id && owned.permanent);
+          
+          return `
+            <div class="shop-item">
+              <div class="shop-item-icon">${item.icon}</div>
+              <div class="shop-item-info">
+                <div class="shop-item-name">${item.name}</div>
+                <div class="shop-item-desc">${item.desc}</div>
+                <div class="shop-item-price">价格: ${item.price} 金币</div>
+              </div>
+              <button 
+                class="shop-buy-btn" 
+                data-item-id="${item.id}"
+                ${!canAfford || alreadyOwned ? 'disabled' : ''}
+              >
+                ${alreadyOwned ? '已拥有' : (canAfford ? '购买' : '金币不足')}
+              </button>
+            </div>
+          `;
+        }).join('');
+        
+        // 绑定购买按钮事件
+        document.querySelectorAll('.shop-buy-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const itemId = e.target.dataset.itemId;
+            buyItem(itemId);
+          });
+        });
+      }
+
+      function buyItem(itemId) {
+        const item = SHOP_ITEMS.find(i => i.id === itemId);
+        if (!item || state.coins < item.price) {
+          playSound('error');
+          return;
+        }
+        
+        state.coins -= item.price;
+        state.ownedItems.push({...item});
+        
+        // 播放购买音效
+        playSound('coin');
+        
+        // 应用道具效果
+        applyItemEffect(item);
+        
+        ui.coins.textContent = state.coins;
+        renderShop();
+        
+        ui.feedback.textContent = `🎉 成功购买 ${item.name}！`;
+        ui.feedback.className = 'feedback success';
+      }
+
+      function applyItemEffect(item) {
+        switch (item.effect) {
+          case 'gold_boost':
+            state.activeEffects.goldMultiplier = 2;
+            state.activeEffects.goldBoostUses = item.uses;
+            break;
+          case 'hint':
+            state.activeEffects.hintAvailable = true;
+            addHintButton();
+            break;
+          case 'exp_boost':
+            state.activeEffects.expBoost = 0.8; // 需要80%的宝物就能升级
+            break;
+          case 'luck':
+            state.activeEffects.luckUses = item.uses;
+            break;
+          case 'voice_boost':
+            // 语音识别增强（在识别时处理）
+            state.activeEffects.voiceBoost = true;
+            break;
+        }
+      }
+
+      function addHintButton() {
+        if (document.getElementById('hint-btn')) return;
+        
+        const hintBtn = document.createElement('button');
+        hintBtn.id = 'hint-btn';
+        hintBtn.className = 'treasure-btn';
+        hintBtn.style.background = 'linear-gradient(145deg, var(--treasure-silver), #e8e8e8)';
+        hintBtn.style.color = '#2d1b0a';
+        hintBtn.style.marginBottom = '10px';
+        hintBtn.textContent = '🔮 获取提示';
+        
+        hintBtn.addEventListener('click', () => {
+          if (state.activeEffects.hintAvailable && state.currentTreasure) {
+            const hint = state.currentTreasure.name.charAt(0).toUpperCase() + '***';
+            ui.feedback.textContent = `💡 提示：单词以 "${hint}" 开头`;
+            ui.feedback.className = 'feedback';
+            
+            // 消耗提示次数
+            const hintItem = state.ownedItems.find(item => item.id === 'hint_crystal');
+            if (hintItem) {
+              hintItem.uses--;
+              if (hintItem.uses <= 0) {
+                state.ownedItems = state.ownedItems.filter(item => item.id !== 'hint_crystal');
+                state.activeEffects.hintAvailable = false;
+                hintBtn.remove();
+              }
+            }
+          }
+        });
+        
+        document.querySelector('.action-buttons').insertBefore(hintBtn, ui.speakBtn);
+      }
+
+      function openShop() {
+        renderShop();
+        ui.shopModal.style.display = 'flex';
+      }
+
+      function closeShop() {
+        ui.shopModal.style.display = 'none';
+      }
+
+      // --- Unit System Functions ---
+      function initializeUnitSystem() {
+        // Initialize unit progress
+        Object.keys(UNIT_TREASURES).forEach(unitId => {
+          state.unitProgress[unitId] = {
+            completed: 0,
+            total: UNIT_TREASURES[unitId].words.length,
+            masteredWords: new Set()
+          };
+        });
+        
+        renderUnitGrid();
+        updateCurrentUnitDisplay();
+      }
+
+      function renderUnitGrid() {
+        const units = Object.entries(UNIT_TREASURES).map(([unitId, unitData]) => {
+          const progress = state.unitProgress[unitId];
+          const completionRate = Math.round((progress.completed / progress.total) * 100);
+          const isActive = state.selectedUnit === unitId;
+          const isCompleted = progress.completed === progress.total;
+          
+          return `
+            <div class="unit-card ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" 
+                 data-unit-id="${unitId}" 
+                 title="${unitData.name}: ${progress.completed}/${progress.total} 已掌握">
+              <span class="unit-icon">${unitData.icon}</span>
+              <div class="unit-name">${unitData.name.split(' - ')[1]}</div>
+              <div class="unit-progress">${isCompleted ? '✅' : completionRate + '%'}</div>
+            </div>
+          `;
+        });
+        
+        ui.unitGrid.innerHTML = units.join('');
+        
+        // Add click listeners to unit cards
+        document.querySelectorAll('.unit-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const unitId = card.dataset.unitId;
+            selectUnit(unitId);
+            playSound('click');
+          });
+        });
+      }
+
+      function selectUnit(unitId) {
+        state.selectedUnit = unitId;
+        renderUnitGrid();
+        updateCurrentUnitDisplay();
+        loadNewTreasure(); // Load a new treasure from the selected unit
+        
+        // Collapse unit grid after selection
+        state.unitGridExpanded = false;
+        ui.unitGrid.classList.remove('expanded');
+        ui.unitToggle.textContent = '展开单元选择';
+        
+        ui.feedback.textContent = `🎯 已切换到 ${UNIT_TREASURES[unitId].name}！准备开始学习吧！`;
+        ui.feedback.className = 'feedback';
+      }
+
+      function resetUnitSelection() {
+        state.selectedUnit = null;
+        renderUnitGrid();
+        updateCurrentUnitDisplay();
+        loadNewTreasure();
+        
+        ui.feedback.textContent = '🌟 已切换到全部单元混合模式！';
+        ui.feedback.className = 'feedback';
+      }
+
+      function updateCurrentUnitDisplay() {
+        if (state.selectedUnit) {
+          const unitData = UNIT_TREASURES[state.selectedUnit];
+          const progress = state.unitProgress[state.selectedUnit];
+          const remaining = progress.total - progress.completed;
+          
+          if (progress.completed === progress.total) {
+            ui.currentUnitInfo.textContent = `🎯 当前：${unitData.name} ✅ 已完成！`;
+          } else {
+            ui.currentUnitInfo.textContent = `🎯 当前：${unitData.name} (${progress.completed}/${progress.total}) 还剩${remaining}个`;
+          }
+        } else {
+          // Show overall progress in mixed mode
+          let totalCompleted = 0;
+          let totalWords = 0;
+          Object.values(state.unitProgress).forEach(progress => {
+            totalCompleted += progress.completed;
+            totalWords += progress.total;
+          });
+          ui.currentUnitInfo.textContent = `🎯 当前：全部单元混合模式 (${totalCompleted}/${totalWords})`;
+        }
+      }
+
+      function toggleUnitGrid() {
+        state.unitGridExpanded = !state.unitGridExpanded;
+        if (state.unitGridExpanded) {
+          ui.unitGrid.classList.add('expanded');
+          ui.unitToggle.textContent = '收起单元选择';
+        } else {
+          ui.unitGrid.classList.remove('expanded');
+          ui.unitToggle.textContent = '展开单元选择';
+        }
+        playSound('click');
+      }
+
+      function getCurrentTreasureSource() {
+        if (state.selectedUnit) {
+          // Return only unmastered words from selected unit
+          const unitData = UNIT_TREASURES[state.selectedUnit];
+          const unitProgress = state.unitProgress[state.selectedUnit];
+          
+          // Filter out already mastered words
+          const unmasteredWords = unitData.words.filter(word => 
+            !unitProgress.masteredWords.has(word.name)
+          );
+          
+          // If all words are mastered, congratulate and switch to mixed mode
+          if (unmasteredWords.length === 0) {
+            ui.feedback.textContent = `🎉 恭喜！你已完全掌握${unitData.name}的所有单词！自动切换到混合模式继续挑战！`;
+            ui.feedback.className = 'feedback success';
+            playSound('level');
+            
+            // Reset to mixed mode after 3 seconds
+            setTimeout(() => {
+              resetUnitSelection();
+            }, 3000);
+            
+            // Return all words as fallback for now
+            const allWords = [];
+            Object.values(UNIT_TREASURES).forEach(unitData => {
+              allWords.push(...unitData.words);
+            });
+            return allWords;
+          }
+          
+          return unmasteredWords;
+        } else {
+          // Return all words from all units (mixed mode) - but prioritize unmastered ones
+          const unmasteredWords = [];
+          const masteredWords = [];
+          
+          Object.entries(UNIT_TREASURES).forEach(([unitId, unitData]) => {
+            const unitProgress = state.unitProgress[unitId];
+            unitData.words.forEach(word => {
+              if (unitProgress.masteredWords.has(word.name)) {
+                masteredWords.push(word);
+              } else {
+                unmasteredWords.push(word);
+              }
+            });
+          });
+          
+          // Return unmastered words first, with some mastered words for review (20% chance)
+          if (unmasteredWords.length > 0) {
+            // 80% unmastered, 20% mastered for review
+            if (Math.random() < 0.8 || masteredWords.length === 0) {
+              return unmasteredWords;
+            } else {
+              return masteredWords;
+            }
+          } else {
+            // All words mastered - return all for continued practice
+            return masteredWords;
+          }
+        }
+      }
+
+      function markWordAsCompleted(wordName) {
+        // Find which unit this word belongs to
+        const unitId = findWordUnit(wordName);
+        if (unitId && !state.unitProgress[unitId].masteredWords.has(wordName)) {
+          state.unitProgress[unitId].masteredWords.add(wordName);
+          state.unitProgress[unitId].completed++;
+          
+          // Update unit display if we're in that unit
+          if (state.selectedUnit === unitId) {
+            updateCurrentUnitDisplay();
+          }
+          
+          renderUnitGrid();
+        }
+      }
+
+      function findWordUnit(wordName) {
+        for (const [unitId, unitData] of Object.entries(UNIT_TREASURES)) {
+          if (unitData.words.some(word => word.name === wordName)) {
+            return unitId;
+          }
+        }
+        return null;
+      }
+
+      // --- Game Functions ---
+      function loadNewTreasure() {
+        // Use unit-based treasure source instead of difficulty levels
+        const availableTreasures = getCurrentTreasureSource();
+        
+        // Safety check: if no treasures available, fallback to all words
+        if (!availableTreasures || availableTreasures.length === 0) {
+          console.warn('No available treasures, falling back to all words');
+          const allWords = [];
+          Object.values(UNIT_TREASURES).forEach(unitData => {
+            allWords.push(...unitData.words);
+          });
+          const randomTreasure = allWords[Math.floor(Math.random() * allWords.length)];
+          state.currentTreasure = randomTreasure;
+        } else {
+          const randomTreasure = availableTreasures[Math.floor(Math.random() * availableTreasures.length)];
+          state.currentTreasure = randomTreasure;
+        }
+        
+        ui.treasureName.textContent = state.currentTreasure.name;
+        ui.treasurePhonetic.textContent = state.currentTreasure.ipa;
+        ui.treasureDescription.textContent = state.currentTreasure.desc;
+        ui.treasureValue.textContent = `价值: ${state.currentTreasure.value}金币`;
+        ui.treasureChest.textContent = state.currentTreasure.icon;
+        
+        // 根据宝物等级改变宝箱颜色
+        const colors = {
+          bronze: 'linear-gradient(145deg, #cd7f32, #8b4513)',
+          silver: 'linear-gradient(145deg, #c0c0c0, #808080)',
+          gold: 'linear-gradient(145deg, #ffd700, #b8860b)',
+          diamond: 'linear-gradient(145deg, #b9f2ff, #87ceeb)'
+        };
+        ui.treasureChest.style.background = colors[level];
+      }
+
+      function checkTreasureName(inputText) {
+        const targetName = state.currentTreasure.name;
+        const userInput = inputText.trim().toLowerCase();
+        
+        if (userInput === targetName.toLowerCase()) {
+          handleCorrectAnswer();
+        } else {
+          playSound('error');
+          ui.feedback.textContent = `❌ 咒语错误！你说的是 "${inputText}"，正确的应该是 "${targetName}"`;
+          ui.feedback.className = 'feedback error';
+          
+          // Auto-play correct pronunciation after 1 second
+          setTimeout(() => {
+            speakWord(targetName);
+            ui.feedback.textContent = `🔊 正在播放正确发音："${targetName}"`;
+          }, 1000);
+        }
+      }
+
+      // Text-to-Speech function for pronunciation demonstration
+      function speakWord(word, isManual = false) {
+        if ('speechSynthesis' in window) {
+          // Cancel any ongoing speech
+          speechSynthesis.cancel();
+          
+          // Disable pronunciation button temporarily
+          if (ui.pronunciationBtn) {
+            ui.pronunciationBtn.disabled = true;
+            ui.pronunciationBtn.textContent = '🔊 播放中...';
+          }
+          
+          const utterance = new SpeechSynthesisUtterance(word);
+          utterance.lang = 'en-US';
+          utterance.rate = 0.8; // Slightly slower for clearer pronunciation
+          utterance.pitch = 1;
+          utterance.volume = 0.8;
+          
+          // Load voices if not already loaded
+          let voices = speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            // Wait for voices to load
+            speechSynthesis.addEventListener('voiceschanged', () => {
+              voices = speechSynthesis.getVoices();
+            });
+          }
+          
+          // Try to use a high-quality English voice
+          const englishVoice = voices.find(voice => 
+            voice.lang.startsWith('en') && (
+              voice.name.includes('Google') || 
+              voice.name.includes('Microsoft') ||
+              voice.name.includes('Alex') ||
+              voice.name.includes('Samantha') ||
+              voice.name.includes('Daniel') ||
+              voice.name.includes('Karen')
+            )
+          ) || voices.find(voice => voice.lang.startsWith('en'));
+          
+          if (englishVoice) {
+            utterance.voice = englishVoice;
+          }
+          
+          utterance.onend = () => {
+            // Re-enable pronunciation button
+            if (ui.pronunciationBtn) {
+              ui.pronunciationBtn.disabled = false;
+              ui.pronunciationBtn.textContent = '🔊 听发音';
+            }
+            
+            if (isManual) {
+              ui.feedback.textContent = `🎵 已播放"${word}"的发音，现在试着说出来吧！`;
+              ui.feedback.className = 'feedback';
+            } else {
+              ui.feedback.textContent = `💡 听清楚了吗？再试一次说出："${word}"`;
+              ui.feedback.className = 'feedback';
+            }
+          };
+          
+          utterance.onerror = (event) => {
+            console.warn('Speech synthesis error:', event.error);
+            
+            // Re-enable pronunciation button
+            if (ui.pronunciationBtn) {
+              ui.pronunciationBtn.disabled = false;
+              ui.pronunciationBtn.textContent = '🔊 听发音';
+            }
+            
+            ui.feedback.textContent = `📖 语音播放失败，请看音标："${word}" ${state.currentTreasure.ipa}`;
+            ui.feedback.className = 'feedback';
+          };
+          
+          // Play the word
+          speechSynthesis.speak(utterance);
+        } else {
+          // Fallback when speech synthesis is not available
+          ui.feedback.textContent = `📖 浏览器不支持语音播放，请看音标：${state.currentTreasure.ipa}`;
+          ui.feedback.className = 'feedback';
+        }
+      }
+
+      function handleCorrectAnswer() {
+        const reward = state.currentTreasure.value;
+        const bonusMultiplier = 1 + (state.level - 1) * 0.1;
+        let finalReward = Math.floor(reward * bonusMultiplier);
+        
+        // 应用黄金药水效果
+        if (state.activeEffects.goldBoostUses > 0) {
+          finalReward *= state.activeEffects.goldMultiplier;
+          state.activeEffects.goldBoostUses--;
+          if (state.activeEffects.goldBoostUses <= 0) {
+            state.activeEffects.goldMultiplier = 1;
+          }
+        }
+        
+        state.coins += finalReward;
+        state.treasuresFound++;
+        state.inventory.push(state.currentTreasure);
+        
+        // Mark word as completed in unit progress
+        markWordAsCompleted(state.currentTreasure.name);
+        
+        // 播放成功音效和金币音效
+        playSound('success');
+        setTimeout(() => playSound('coin'), 300);
+        
+        // 添加庆祝动画
+        ui.treasureChest.classList.add('celebrate');
+        ui.coins.classList.add('coin-earned');
+        
+        ui.coins.textContent = state.coins;
+        ui.treasures.textContent = state.treasuresFound;
+        ui.feedback.textContent = `🎉 恭喜！你获得了 ${state.currentTreasure.name}！+${finalReward} 金币`;
+        ui.feedback.className = 'feedback success';
+        
+        // 升级检查（考虑经验护符效果）
+        const upgradeThreshold = Math.ceil(5 * state.activeEffects.expBoost);
+        if (state.treasuresFound % upgradeThreshold === 0) {
+          state.level++;
+          ui.level.textContent = state.level;
+          setTimeout(() => {
+            playSound('level');
+            ui.feedback.textContent = `⭐ 恭喜升级到 ${state.level} 级！解锁更珍贵的宝藏！`;
+            ui.feedback.className = 'feedback success';
+          }, 2000);
+        }
+        
+        // 清除动画类
+        setTimeout(() => {
+          ui.treasureChest.classList.remove('celebrate');
+          ui.coins.classList.remove('coin-earned');
+        }, 600);
+        
+        // 3秒后加载新宝物
+        setTimeout(() => {
+          loadNewTreasure();
+          ui.feedback.textContent = '🔍 发现新的宝藏！准备好说出它的真名了吗？';
+          ui.feedback.className = 'feedback';
+        }, 3000);
+      }
+
+      // --- Event Listeners ---
+      ui.speakBtn.addEventListener('click', () => {
+        playSound('click');
+        if (recognizer && !state.recognizing) {
+          recognizer.start();
+        }
+      });
+
+      ui.submitBtn.addEventListener('click', () => {
+        playSound('click');
+        const inputText = ui.manualInput.value;
+        if (inputText.trim()) {
+          checkTreasureName(inputText);
+          ui.manualInput.value = '';
+        }
+      });
+      
+      ui.manualInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          ui.submitBtn.click();
+        }
+      });
+
+      ui.shopBtn.addEventListener('click', () => {
+        playSound('click');
+        openShop();
+      });
+      
+      ui.shopClose.addEventListener('click', () => {
+        playSound('click');
+        closeShop();
+      });
+      
+      // 点击模态窗口外部关闭商店
+      ui.shopModal.addEventListener('click', (e) => {
+        if (e.target === ui.shopModal) {
+          closeShop();
+        }
+      });
+
+      // Unit system event listeners
+      ui.unitToggle.addEventListener('click', toggleUnitGrid);
+      ui.resetUnitBtn.addEventListener('click', () => {
+        playSound('click');
+        resetUnitSelection();
+      });
+
+      // Pronunciation button event listener
+      ui.pronunciationBtn.addEventListener('click', () => {
+        playSound('click');
+        if (state.currentTreasure) {
+          speakWord(state.currentTreasure.name, true);
+        }
+      });
+
+      // --- Initialize Game ---
+      initializeTreasures(); // Initialize compatibility system
+      initializeUnitSystem();
+      loadNewTreasure();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Treasure Digger · 挖宝背单词大师</title>
+  <style>
+    :root {
+      --dirt-brown: #8B4513;
+      --grass-green: #228B22;
+      --treasure-gold: #FFD700;
+      --treasure-silver: #C0C0C0;
+      --treasure-bronze: #CD7F32;
+      --treasure-diamond: #B9F2FF;
+      --tool-color: #4A4A4A;
+      --sky-blue: #87CEEB;
+      --cloud-white: #FFFFFF;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: linear-gradient(to bottom, var(--sky-blue) 0%, #98FB98 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Game Container */
+    #game-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Header */
+    .game-header {
+      background: linear-gradient(45deg, #8B4513, #A0522D);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 15px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+    
+    .game-title {
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    /* Status Bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.9);
+      padding: 15px 25px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+    }
+    
+    .status-icon {
+      font-size: 20px;
+    }
+    
+    /* Main Game Area */
+    .game-area {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+    
+    /* Digging Ground */
+    .digging-ground {
+      background: linear-gradient(to bottom, var(--grass-green) 0%, var(--grass-green) 10%, var(--dirt-brown) 10%);
+      border: 3px solid #654321;
+      border-radius: 15px;
+      min-height: 600px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 10px 20px rgba(0,0,0,0.3);
+    }
+    
+    .grass-surface {
+      height: 60px;
+      background: linear-gradient(to bottom, var(--grass-green), #32CD32);
+      position: relative;
+    }
+    
+    .dirt-area {
+      flex: 1;
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(139,69,19,0.8) 2px, transparent 2px),
+        radial-gradient(circle at 80% 80%, rgba(160,82,45,0.6) 1px, transparent 1px),
+        radial-gradient(circle at 40% 60%, rgba(101,67,33,0.4) 1px, transparent 1px);
+      background-size: 50px 50px, 30px 30px, 20px 20px;
+      padding: 20px;
+      position: relative;
+    }
+    
+    /* Treasure Spots */
+    .treasure-spot {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    
+    .treasure-spot:hover {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+    
+    .treasure-buried {
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      border: 3px solid rgba(255,255,255,0.5);
+    }
+    
+    .treasure-bronze { background: linear-gradient(45deg, var(--treasure-bronze), #B87333); }
+    .treasure-silver { background: linear-gradient(45deg, var(--treasure-silver), #A8A8A8); }
+    .treasure-gold { background: linear-gradient(45deg, var(--treasure-gold), #B8860B); }
+    .treasure-diamond { background: linear-gradient(45deg, var(--treasure-diamond), #87CEEB); }
+    
+    /* Tool Panel */
+    .tool-panel {
+      background: linear-gradient(145deg, #F4E4BC, #DDD0A7);
+      border: 3px solid #8B4513;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .panel-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #654321;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .current-tool {
+      background: rgba(255,255,255,0.8);
+      border: 2px solid #8B4513;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .tool-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .tool-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .tool-power {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .action-buttons {
+      display: grid;
+      gap: 10px;
+    }
+    
+    .action-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .shop-btn {
+      background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+      color: white;
+    }
+    
+    .inventory-btn {
+      background: linear-gradient(45deg, #4ECDC4, #45B7B8);
+      color: white;
+    }
+    
+    .market-btn {
+      background: linear-gradient(45deg, #FFA726, #FFB74D);
+      color: white;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+    
+    /* Learning Modal */
+    .learning-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .learning-content {
+      background: linear-gradient(145deg, #3D2914, #2A1A0A);
+      border: 3px solid var(--treasure-gold);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      text-align: center;
+      color: white;
+    }
+    
+    .treasure-display {
+      margin: 20px 0;
+    }
+    
+    .treasure-word {
+      font-size: 48px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+      margin-bottom: 10px;
+    }
+    
+    .treasure-phonetic {
+      font-size: 20px;
+      color: var(--treasure-silver);
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+    
+    .treasure-meaning {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    
+    .pronunciation-section {
+      margin: 20px 0;
+    }
+    
+    .speak-instruction {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .speak-btn {
+      background: linear-gradient(145deg, var(--treasure-gold), #FFED4A);
+      color: #2D1B0A;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 10px;
+    }
+    
+    .listen-btn {
+      background: linear-gradient(145deg, #9C88FF, #6C5CE7);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    
+    .manual-input-section {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .word-input {
+      padding: 12px;
+      border: 2px solid #8B4513;
+      border-radius: 8px;
+      font-size: 16px;
+      background: rgba(255,255,255,0.9);
+    }
+    
+    .submit-btn {
+      background: linear-gradient(145deg, #28A745, #20C997);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    
+    .feedback {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      min-height: 30px;
+    }
+    
+    .feedback.success {
+      color: var(--treasure-gold);
+    }
+    
+    .feedback.error {
+      color: #FF6B6B;
+    }
+    
+    /* Shop Modal */
+    .shop-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .shop-content {
+      background: linear-gradient(145deg, #8B4513, #A0522D);
+      border: 3px solid var(--treasure-gold);
+      border-radius: 20px;
+      width: min(90vw, 600px);
+      max-height: 80vh;
+      overflow-y: auto;
+      color: white;
+    }
+    
+    .shop-header {
+      background: linear-gradient(90deg, var(--treasure-gold), #FFED4A, var(--treasure-gold));
+      color: #2D1B0A;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 17px 17px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .shop-close {
+      background: none;
+      border: none;
+      font-size: 30px;
+      cursor: pointer;
+      color: #2D1B0A;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .shop-close:hover {
+      background: rgba(45,27,10,0.2);
+    }
+    
+    .shop-info {
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      margin: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .current-coins {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+    }
+    
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .tool-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      border: 2px solid rgba(255,215,0,0.3);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .tool-card:hover {
+      border-color: var(--treasure-gold);
+      background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
+      transform: translateY(-5px);
+    }
+    
+    .tool-card.owned {
+      border-color: var(--treasure-silver);
+      background: linear-gradient(145deg, rgba(192,192,192,0.2), rgba(192,192,192,0.1));
+    }
+    
+    .tool-card.equipped {
+      border-color: var(--treasure-gold);
+      background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1));
+      box-shadow: 0 0 20px rgba(255,215,0,0.3);
+    }
+    
+    .tool-card-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .tool-card-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--treasure-gold);
+    }
+    
+    .tool-card-description {
+      font-size: 14px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+    
+    .tool-card-power {
+      background: rgba(255,255,255,0.2);
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      margin-bottom: 15px;
+      display: inline-block;
+    }
+    
+    .tool-card-price {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+      margin-bottom: 15px;
+    }
+    
+    .tool-buy-btn, .tool-equip-btn {
+      background: linear-gradient(45deg, #28A745, #20C997);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    
+    .tool-buy-btn:hover, .tool-equip-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .tool-buy-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .tool-equip-btn {
+      background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+    }
+    
+    .tool-equipped {
+      background: linear-gradient(45deg, var(--treasure-gold), #FFED4A);
+      color: #2D1B0A;
+    }
+    
+    @media (max-width: 768px) {
+      .shop-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+      }
+      
+      .tool-card {
+        padding: 15px;
+      }
+    }
+    
+    /* Inventory Modal */
+    .inventory-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .inventory-content {
+      background: linear-gradient(145deg, #4ECDC4, #45B7B8);
+      border: 3px solid var(--treasure-gold);
+      border-radius: 20px;
+      width: min(90vw, 700px);
+      max-height: 80vh;
+      overflow-y: auto;
+      color: white;
+    }
+    
+    .inventory-header {
+      background: linear-gradient(90deg, var(--treasure-gold), #FFED4A, var(--treasure-gold));
+      color: #2D1B0A;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 17px 17px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    
+    .treasure-item {
+      background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
+      border: 2px solid rgba(255,215,0,0.3);
+      border-radius: 15px;
+      padding: 15px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .treasure-item:hover {
+      border-color: var(--treasure-gold);
+      background: linear-gradient(145deg, rgba(255,255,255,0.2), rgba(255,255,255,0.15));
+      transform: translateY(-3px);
+    }
+    
+    .treasure-item-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .treasure-item-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--treasure-gold);
+    }
+    
+    .treasure-item-desc {
+      font-size: 12px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+      line-height: 1.3;
+    }
+    
+    .treasure-item-value {
+      background: rgba(255,255,255,0.2);
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+    
+    /* Market Modal */
+    .market-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .market-content {
+      background: linear-gradient(145deg, #FFA726, #FFB74D);
+      border: 3px solid var(--treasure-gold);
+      border-radius: 20px;
+      width: min(90vw, 700px);
+      max-height: 80vh;
+      overflow-y: auto;
+      color: white;
+    }
+    
+    .market-header {
+      background: linear-gradient(90deg, var(--treasure-gold), #FFED4A, var(--treasure-gold));
+      color: #2D1B0A;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 17px 17px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .market-info {
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      margin: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .sell-btn {
+      background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    
+    .sell-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .sell-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .empty-inventory, .empty-market {
+      text-align: center;
+      padding: 40px 20px;
+      opacity: 0.7;
+    }
+    
+    .empty-inventory-icon, .empty-market-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+      display: block;
+    }
+    
+    /* Progress Indicators */
+    .digging-progress {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      z-index: 20;
+    }
+    
+    .hit-effect {
+      position: absolute;
+      font-size: 30px;
+      z-index: 30;
+      pointer-events: none;
+      animation: hitEffect 1s ease-out forwards;
+    }
+    
+    @keyframes hitEffect {
+      0% {
+        opacity: 1;
+        transform: scale(0.5) translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.5) translateY(-50px);
+      }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .game-area {
+        grid-template-columns: 1fr;
+      }
+      
+      .status-bar {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .treasure-spot {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <!-- Game Header -->
+    <div class="game-header">
+      <div class="game-title">🏺 挖宝背单词大师 ⛏️</div>
+    </div>
+    
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-icon">💰</span>
+        <span>金币: <strong id="coins">500</strong></span>
+      </div>
+      <div class="status-item">
+        <span class="status-icon">💎</span>
+        <span>宝物: <strong id="treasures-found">0</strong></span>
+      </div>
+      <div class="status-item">
+        <span class="status-icon">⚡</span>
+        <span>等级: <strong id="player-level">1</strong></span>
+      </div>
+      <div class="status-item">
+        <span class="status-icon">🎯</span>
+        <span>单元: <strong id="current-unit">混合模式</strong></span>
+      </div>
+    </div>
+    
+    <!-- Main Game Area -->
+    <div class="game-area">
+      <!-- Digging Ground -->
+      <div class="digging-ground">
+        <div class="grass-surface"></div>
+        <div class="dirt-area" id="dirt-area">
+          <!-- Treasure spots will be generated here -->
+        </div>
+      </div>
+      
+      <!-- Tool Panel -->
+      <div class="tool-panel">
+        <div class="panel-title">🛠️ 挖掘工具</div>
+        
+        <div class="current-tool">
+          <span class="tool-icon" id="current-tool-icon">🔨</span>
+          <div class="tool-name" id="current-tool-name">基础铁锤</div>
+          <div class="tool-power" id="current-tool-power">挖掘力: 1 (需要3-5次)</div>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="action-btn shop-btn" id="shop-btn">
+            🏪 工具商店
+          </button>
+          <button class="action-btn inventory-btn" id="inventory-btn">
+            🎒 背包库存
+          </button>
+          <button class="action-btn market-btn" id="market-btn">
+            🏛️ 宝物市场
+          </button>
+        </div>
+        
+        <div class="auxiliary-tools" id="auxiliary-tools">
+          <div class="panel-title" style="font-size: 16px; margin: 15px 0 10px 0;">🔧 辅助道具</div>
+          <!-- Auxiliary tools will be rendered here -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Learning Modal -->
+  <div class="learning-modal" id="learning-modal">
+    <div class="learning-content">
+      <div class="treasure-display">
+        <div class="treasure-word" id="modal-word">treasure</div>
+        <div class="treasure-phonetic" id="modal-phonetic">/ˈtrɛʒər/</div>
+        <div class="treasure-meaning" id="modal-meaning">一个珍贵的宝藏，等待勇敢的探险者发现</div>
+      </div>
+      
+      <div class="pronunciation-section">
+        <div class="speak-instruction">🎙️ 大声说出这个单词来获得宝藏！</div>
+        <button class="listen-btn" id="listen-btn">🔊 听发音</button>
+        <button class="speak-btn" id="speak-btn">开始语音识别</button>
+        
+        <div class="manual-input-section">
+          <input type="text" class="word-input" id="word-input" placeholder="或者手动输入单词">
+          <button class="submit-btn" id="submit-word-btn">提交</button>
+        </div>
+      </div>
+      
+      <div class="feedback" id="learning-feedback">准备好了吗？</div>
+    </div>
+  </div>
+
+  <!-- Shop Modal -->
+  <div class="shop-modal" id="shop-modal">
+    <div class="shop-content">
+      <div class="shop-header">
+        <span>🏪 挖掘工具商店</span>
+        <button class="shop-close" id="shop-close">×</button>
+      </div>
+      
+      <div class="shop-info">
+        <div class="current-coins">💰 当前金币: <span id="shop-coins">500</span></div>
+        <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+          购买更强大的工具，提高挖掘效率！
+        </div>
+      </div>
+      
+      <div class="shop-grid" id="shop-grid">
+        <!-- Tool cards will be generated here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Inventory Modal -->
+  <div class="inventory-modal" id="inventory-modal">
+    <div class="inventory-content">
+      <div class="inventory-header">
+        <span>🎒 宝物背包</span>
+        <button class="shop-close" id="inventory-close">×</button>
+      </div>
+      
+      <div class="inventory-grid" id="inventory-grid">
+        <!-- Inventory items will be generated here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Market Modal -->
+  <div class="market-modal" id="market-modal">
+    <div class="market-content">
+      <div class="market-header">
+        <span>🏛️ 宝物市场</span>
+        <button class="shop-close" id="market-close">×</button>
+      </div>
+      
+      <div class="market-info">
+        <div class="current-coins">💰 当前金币: <span id="market-coins">500</span></div>
+        <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+          在这里出售你的宝物获得金币！价格会根据市场行情浮动。
+        </div>
+      </div>
+      
+      <div class="inventory-grid" id="market-grid">
+        <!-- Market items will be generated here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Game State
+    const gameState = {
+      coins: 500,
+      treasuresFound: 0,
+      playerLevel: 1,
+      currentUnit: null,
+      currentTool: {
+        id: 'basic_hammer',
+        name: '基础铁锤',
+        icon: '🔨',
+        power: 1,
+        description: '挖掘力: 1 (需要3-5次)'
+      },
+      inventory: [],
+      treasureSpots: [],
+      currentTreasure: null,
+      recognizing: false,
+      ownedTools: ['basic_hammer'], // 拥有的工具列表
+      equippedTool: 'basic_hammer', // 当前装备的工具
+      auxiliaryTools: [], // 辅助道具列表
+      consumableItems: { energy_drink: 0 }, // 消耗品数量
+      activeEffects: [] // 当前激活的效果
+    };
+
+    // Audio System
+    let audioContext;
+    let audioInitialized = false;
+
+    function initializeAudio() {
+      if (!audioInitialized) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioInitialized = true;
+      }
+    }
+    
+    function playSound(type, frequency = 440, duration = 200) {
+      initializeAudio();
+      if (!audioContext) return;
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      switch(type) {
+        case 'dig':
+          // 挖掘音效 - 撞击声
+          oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.1);
+          oscillator.type = 'sawtooth';
+          duration = 150;
+          break;
+        case 'treasure_found':
+          // 发现宝物音效 - 神秘音调
+          oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.3);
+          oscillator.type = 'sine';
+          duration = 500;
+          break;
+        case 'success':
+          // 成功音效 - 上升音调
+          oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + duration / 1000);
+          oscillator.type = 'sine';
+          break;
+        case 'error':
+          // 错误音效 - 下降音调
+          oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + duration / 1000);
+          oscillator.type = 'sawtooth';
+          break;
+        case 'coin':
+          // 金币音效 - 清脆音调
+          oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+          oscillator.type = 'square';
+          duration = 150;
+          break;
+        case 'click':
+          // 点击音效
+          oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+          oscillator.type = 'triangle';
+          duration = 100;
+          break;
+        case 'level_up':
+          // 升级音效
+          playLevelUpSound();
+          return;
+        case 'magic':
+          // 魔法音效 - 神奇的音调
+          oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C5
+          oscillator.frequency.exponentialRampToValueAtTime(784, audioContext.currentTime + 0.2); // G5
+          oscillator.frequency.exponentialRampToValueAtTime(1047, audioContext.currentTime + 0.4); // C6
+          oscillator.type = 'sine';
+          duration = 600;
+          break;
+      }
+      
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration / 1000);
+    }
+    
+    function playLevelUpSound() {
+      // 升级音效 - 三个音符组成的旋律
+      const notes = [523, 659, 784]; // C5, E5, G5
+      notes.forEach((freq, i) => {
+        setTimeout(() => playSound('success', freq, 300), i * 200);
+      });
+    }
+
+    function playDiggingSequence(toolPower) {
+      // 根据工具等级播放不同的挖掘音效
+      if (toolPower >= 5) {
+        playSound('magic'); // 魔法工具
+      } else if (toolPower >= 3) {
+        playSound('dig', 100, 200); // 高级工具
+      } else {
+        playSound('dig', 150, 150); // 普通工具
+      }
+    }
+
+    // Tools Configuration
+    const TOOLS = {
+      basic_hammer: { 
+        name: '基础铁锤', 
+        icon: '🔨', 
+        power: 1, 
+        cost: 0, 
+        description: '最基础的挖掘工具，虽然效率不高，但是免费使用。',
+        powerDesc: '挖掘力: 1 (需要6-10次)'
+      },
+      iron_pickaxe: { 
+        name: '铁制镐子', 
+        icon: '⛏️', 
+        power: 2, 
+        cost: 200, 
+        description: '铁匠精心打造的镐子，挖掘效率翻倍，是冒险者的好伙伴。',
+        powerDesc: '挖掘力: 2 (需要4-6次)'
+      },
+      steel_drill: { 
+        name: '钢铁钻头', 
+        icon: '🔩', 
+        power: 3, 
+        cost: 500, 
+        description: '工业级钻头，机械力量让挖掘变得轻松，适合专业挖宝者。',
+        powerDesc: '挖掘力: 3 (需要2-4次)'
+      },
+      diamond_excavator: { 
+        name: '钻石挖掘机', 
+        icon: '💎', 
+        power: 5, 
+        cost: 1000, 
+        description: '顶级科技产物，钻石硬度让任何宝物都无法抵挡，高效挖掘！',
+        powerDesc: '挖掘力: 5 (需要1-2次)'
+      },
+      magic_wand: { 
+        name: '魔法法杖', 
+        icon: '🪄', 
+        power: 10, 
+        cost: 2000, 
+        description: '传说中的神器，蕴含古老魔法，能够瞬间提取任何埋藏的宝物！',
+        powerDesc: '魔法挖掘 (瞬间完成!)'
+      },
+      // Auxiliary Tools
+      treasure_detector: {
+        name: '宝物探测器',
+        icon: '📡',
+        power: 0,
+        cost: 300,
+        description: '高科技探测设备，能够显示附近宝物的大致价值，让挖掘更有针对性。',
+        powerDesc: '辅助工具 (显示宝物价值)',
+        type: 'auxiliary'
+      },
+      market_insider: {
+        name: '市场内幕消息',
+        icon: '📊',
+        power: 0,
+        cost: 150,
+        description: '获得市场内部消息，让你在出售宝物时获得更好的价格。',
+        powerDesc: '辅助道具 (提高售价10-30%)',
+        type: 'auxiliary'
+      },
+      lucky_charm: {
+        name: '幸运护符',
+        icon: '🍀',
+        power: 0,
+        cost: 800,
+        description: '神秘的幸运护符，增加发现高价值宝物的概率。',
+        powerDesc: '幸运加成 (稀有宝物+25%)',
+        type: 'auxiliary'
+      },
+      energy_drink: {
+        name: '能量饮料',
+        icon: '⚡',
+        power: 0,
+        cost: 50,
+        description: '提神饮料，临时提高挖掘效率。每次使用后消耗。',
+        powerDesc: '临时道具 (下次挖掘力+1)',
+        type: 'consumable'
+      }
+    };
+
+    // Treasure Types
+    const TREASURE_TYPES = ['bronze', 'silver', 'gold', 'diamond'];
+    const TREASURE_VALUES = {
+      bronze: { min: 20, max: 50, hits: [6,7,8] },
+      silver: { min: 60, max: 100, hits: [8,9,10] },
+      gold: { min: 150, max: 250, hits: [10,12,14] },
+      diamond: { min: 300, max: 500, hits: [12,15,18] }
+    };
+
+    // Unit Treasures (reuse from previous code)
+    const UNIT_TREASURES = {
+      unit1: {
+        name: "Unit 1 - 初次相遇",
+        icon: "👋",
+        words: [
+          { name: 'name', ipa: '/neɪm/', desc: '记录身份的神秘符文', value: 20, icon: '📛' },
+          { name: 'hello', ipa: '/həˈloʊ/', desc: '开启友谊大门的魔法咒语', value: 20, icon: '👋' },
+          { name: 'good', ipa: '/ɡʊd/', desc: '蕴含善良力量的古老词汇', value: 25, icon: '✨' },
+          { name: 'nice', ipa: '/naɪs/', desc: '带来愉悦的温暖宝石', value: 25, icon: '😊' },
+          { name: 'meet', ipa: '/miːt/', desc: '连接心灵的桥梁', value: 25, icon: '🤝' },
+          { name: 'thanks', ipa: '/θæŋks/', desc: '感恩之心的美好回响', value: 35, icon: '🙏' },
+        ]
+      },
+      unit2: {
+        name: "Unit 2 - 家庭成员",
+        icon: "👨‍👩‍👧‍👦",
+        words: [
+          { name: 'family', ipa: '/ˈfæməli/', desc: '血脉相连的温暖港湾', value: 35, icon: '👨‍👩‍👧‍👦' },
+          { name: 'father', ipa: '/ˈfɑːðər/', desc: '如山般坚实的守护者', value: 35, icon: '👨' },
+          { name: 'mother', ipa: '/ˈmʌðər/', desc: '如海般深情的呵护者', value: 35, icon: '👩' },
+          { name: 'sister', ipa: '/ˈsɪstər/', desc: '心灵相通的玫瑰花', value: 35, icon: '👭' },
+          { name: 'brother', ipa: '/ˈbrʌðər/', desc: '并肩作战的战友', value: 40, icon: '👬' },
+          { name: 'friend', ipa: '/frend/', desc: '患难与共的珍贵宝藏', value: 35, icon: '👫' }
+        ]
+      }
+      // Add more units as needed
+    };
+
+    // DOM Elements
+    const elements = {
+      coins: document.getElementById('coins'),
+      treasuresFound: document.getElementById('treasures-found'),
+      playerLevel: document.getElementById('player-level'),
+      currentUnit: document.getElementById('current-unit'),
+      currentToolIcon: document.getElementById('current-tool-icon'),
+      currentToolName: document.getElementById('current-tool-name'),
+      currentToolPower: document.getElementById('current-tool-power'),
+      dirtArea: document.getElementById('dirt-area'),
+      learningModal: document.getElementById('learning-modal'),
+      modalWord: document.getElementById('modal-word'),
+      modalPhonetic: document.getElementById('modal-phonetic'),
+      modalMeaning: document.getElementById('modal-meaning'),
+      listenBtn: document.getElementById('listen-btn'),
+      speakBtn: document.getElementById('speak-btn'),
+      wordInput: document.getElementById('word-input'),
+      submitWordBtn: document.getElementById('submit-word-btn'),
+      learningFeedback: document.getElementById('learning-feedback'),
+      shopBtn: document.getElementById('shop-btn'),
+      inventoryBtn: document.getElementById('inventory-btn'),
+      marketBtn: document.getElementById('market-btn'),
+      // Shop elements
+      shopModal: document.getElementById('shop-modal'),
+      shopClose: document.getElementById('shop-close'),
+      shopCoins: document.getElementById('shop-coins'),
+      shopGrid: document.getElementById('shop-grid'),
+      // Inventory elements
+      inventoryModal: document.getElementById('inventory-modal'),
+      inventoryClose: document.getElementById('inventory-close'),
+      inventoryGrid: document.getElementById('inventory-grid'),
+      // Market elements
+      marketModal: document.getElementById('market-modal'),
+      marketClose: document.getElementById('market-close'),
+      marketCoins: document.getElementById('market-coins'),
+      marketGrid: document.getElementById('market-grid')
+    };
+
+    // Initialize Game
+    function initGame() {
+      generateTreasureSpots();
+      updateUI();
+      setupEventListeners();
+    }
+
+    // Generate random treasure spots
+    function generateTreasureSpots() {
+      const dirtArea = elements.dirtArea;
+      const areaWidth = 500; // Approximate width
+      const areaHeight = 500; // Approximate height
+      
+      // Clear existing spots
+      gameState.treasureSpots = [];
+      dirtArea.innerHTML = '';
+      
+      // Generate 12-15 treasure spots
+      const numSpots = 12 + Math.floor(Math.random() * 4);
+      
+      for (let i = 0; i < numSpots; i++) {
+        const spot = enhancedCreateTreasureSpot(i, areaWidth, areaHeight);
+        gameState.treasureSpots.push(spot);
+        
+        const spotElement = document.createElement('div');
+        spotElement.className = `treasure-spot treasure-${spot.type}`;
+        spotElement.style.left = spot.x + 'px';
+        spotElement.style.top = spot.y + 'px';
+        spotElement.dataset.spotId = i;
+        
+        const buriedDiv = document.createElement('div');
+        buriedDiv.className = 'treasure-buried';
+        buriedDiv.textContent = spot.word.icon;
+        
+        // Show value if treasure detector is owned
+        if (spot.showValue) {
+          const valueIndicator = document.createElement('div');
+          valueIndicator.className = 'treasure-value-indicator';
+          valueIndicator.textContent = `💰${spot.value}`;
+          valueIndicator.style.cssText = `
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,215,0,0.9);
+            color: black;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+          `;
+          spotElement.appendChild(valueIndicator);
+        }
+        
+        spotElement.appendChild(buriedDiv);
+        dirtArea.appendChild(spotElement);
+        
+        spotElement.addEventListener('click', () => digTreasure(i));
+      }
+    }
+
+    // Check if current level is complete
+    function checkLevelComplete() {
+      const remaining = gameState.treasureSpots.filter(spot => !spot.discovered).length;
+      
+      if (remaining === 0) {
+        showLevelCompleteModal();
+      }
+    }
+
+    // Show level complete celebration
+    function showLevelCompleteModal() {
+      playSound('level_up');
+      
+      const encouragements = [
+        "🎊 太棒了！你是真正的挖宝大师！",
+        "🏆 完美！你的挖掘技巧令人惊叹！",
+        "⭐ 惊人的成就！继续保持下去！",
+        "🌟 你的学习热情令人敬佩！",
+        "🎯 优秀！你已经掌握了所有宝藏！",
+        "💫 太厉害了！挖宝背单词双丰收！"
+      ];
+      
+      const bonus = Math.floor(gameState.treasuresFound * 10 + Math.random() * 100);
+      gameState.coins += bonus;
+      
+      const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+      
+      setTimeout(() => {
+        alert(`${encouragement}\n\n🎁 完成奖励: +${bonus} 金币\n💰 当前总金币: ${gameState.coins}\n\n准备开始下一轮挖宝冒险吗？`);
+        
+        setTimeout(() => {
+          startNextRound();
+        }, 1000);
+      }, 500);
+    }
+
+    // Start next round
+    function startNextRound() {
+      gameState.playerLevel++;
+      updateUI();
+      generateTreasureSpots();
+      
+      // Show new round notification
+      setTimeout(() => {
+        const newRoundMessages = [
+          "🗺️ 发现了新的宝藏地点！",
+          "⛏️ 新一轮的挖宝冒险开始了！",
+          "🏺 更多神秘宝藏等待发现！",
+          "🎒 准备好你的工具，新的挑战来了！",
+          "🌍 探索新的挖掘区域！"
+        ];
+        
+        const message = newRoundMessages[Math.floor(Math.random() * newRoundMessages.length)];
+        alert(`${message}\n\n🆙 等级提升至 ${gameState.playerLevel} 级\n🎯 继续你的单词学习之旅！`);
+      }, 500);
+    }
+
+    // Create individual treasure spot
+    function createTreasureSpot(id, maxWidth, maxHeight) {
+      const words = getAllWords();
+      const word = words[Math.floor(Math.random() * words.length)];
+      
+      // Determine treasure type based on word value
+      let type = 'bronze';
+      if (word.value >= 300) type = 'diamond';
+      else if (word.value >= 150) type = 'gold';
+      else if (word.value >= 60) type = 'silver';
+      
+      const treasureConfig = TREASURE_VALUES[type];
+      const hitsRequired = treasureConfig.hits[Math.floor(Math.random() * treasureConfig.hits.length)];
+      
+      return {
+        id,
+        word,
+        type,
+        value: word.value,
+        hitsRequired,
+        hitsRemaining: hitsRequired,
+        x: Math.random() * (maxWidth - 60),
+        y: Math.random() * (maxHeight - 60),
+        discovered: false
+      };
+    }
+
+    // Get all words from units
+    function getAllWords() {
+      const words = [];
+      Object.values(UNIT_TREASURES).forEach(unit => {
+        words.push(...unit.words);
+      });
+      return words;
+    }
+
+    // Enhanced dig treasure with auxiliary effects
+    function digTreasure(spotId) {
+      const spot = gameState.treasureSpots[spotId];
+      if (!spot || spot.discovered) return;
+      
+      const tool = gameState.currentTool;
+      let damage = tool.power;
+      
+      // Apply energy drink effect
+      const energyEffect = gameState.activeEffects.find(e => e.type === 'energy_boost');
+      if (energyEffect) {
+        damage += 1;
+        energyEffect.remaining--;
+        if (energyEffect.remaining <= 0) {
+          gameState.activeEffects = gameState.activeEffects.filter(e => e !== energyEffect);
+        }
+        createHitEffect(spotId, '+1⚡', 'energy-boost');
+      }
+      
+      damage = Math.min(damage, spot.hitsRemaining);
+      spot.hitsRemaining -= damage;
+      
+      // Play digging sound effect
+      playDiggingSequence(tool.power);
+      
+      // Visual feedback
+      createHitEffect(spotId, damage);
+      updateProgressIndicator(spotId, spot);
+      
+      if (spot.hitsRemaining <= 0) {
+        // Treasure discovered!
+        spot.discovered = true;
+        
+        // Play treasure found sound
+        setTimeout(() => {
+          playSound('treasure_found');
+        }, 300);
+        
+        showLearningModal(spot);
+      }
+    }
+
+    // Enhanced create hit effect
+    function createHitEffect(spotId, damage, effectType = 'normal') {
+      const spotElement = document.querySelector(`[data-spot-id="${spotId}"]`);
+      const effect = document.createElement('div');
+      effect.className = 'hit-effect';
+      
+      if (effectType === 'energy-boost') {
+        effect.textContent = damage;
+        effect.style.color = '#FFD700';
+        effect.style.fontSize = '20px';
+      } else {
+        effect.textContent = '-' + damage;
+      }
+      
+      effect.style.left = '50%';
+      effect.style.top = '0';
+      
+      spotElement.appendChild(effect);
+      
+      setTimeout(() => {
+        if (effect.parentNode) {
+          effect.parentNode.removeChild(effect);
+        }
+      }, 1000);
+    }
+
+    // Update progress indicator
+    function updateProgressIndicator(spotId, spot) {
+      const spotElement = document.querySelector(`[data-spot-id="${spotId}"]`);
+      let indicator = spotElement.querySelector('.digging-progress');
+      
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.className = 'digging-progress';
+        spotElement.appendChild(indicator);
+      }
+      
+      indicator.textContent = `${spot.hitsRemaining}/${spot.hitsRequired}`;
+      
+      if (spot.hitsRemaining <= 0) {
+        setTimeout(() => {
+          indicator.style.display = 'none';
+        }, 500);
+      }
+    }
+
+    // Show learning modal
+    function showLearningModal(spot) {
+      gameState.currentTreasure = spot;
+      
+      elements.modalWord.textContent = spot.word.name;
+      elements.modalPhonetic.textContent = spot.word.ipa;
+      elements.modalMeaning.textContent = spot.word.desc;
+      elements.learningFeedback.textContent = '准备好了吗？';
+      elements.learningFeedback.className = 'feedback';
+      
+      elements.learningModal.style.display = 'flex';
+    }
+
+    // Hide learning modal
+    function hideLearningModal() {
+      elements.learningModal.style.display = 'none';
+      if (gameState.currentTreasure) {
+        removeTreasureSpot(gameState.currentTreasure.id);
+        gameState.currentTreasure = null;
+      }
+    }
+
+    // Remove treasure spot from view
+    function removeTreasureSpot(spotId) {
+      const spotElement = document.querySelector(`[data-spot-id="${spotId}"]`);
+      if (spotElement) {
+        spotElement.style.animation = 'treasureCollected 0.5s ease-out forwards';
+        setTimeout(() => {
+          if (spotElement.parentNode) {
+            spotElement.parentNode.removeChild(spotElement);
+          }
+        }, 500);
+      }
+    }
+
+    // Handle correct answer
+    function handleCorrectAnswer() {
+      const spot = gameState.currentTreasure;
+      if (!spot) return;
+      
+      gameState.coins += spot.value;
+      gameState.treasuresFound++;
+      gameState.inventory.push(spot.word);
+      
+      // Play success and coin sounds
+      playSound('success');
+      setTimeout(() => playSound('coin'), 300);
+      
+      elements.learningFeedback.textContent = `🎉 恭喜！获得宝藏"${spot.word.name}"！+${spot.value}金币`;
+      elements.learningFeedback.className = 'feedback success';
+      
+      updateUI();
+      
+      setTimeout(() => {
+        hideLearningModal();
+        checkLevelComplete();
+      }, 2000);
+    }
+
+    // Update UI
+    function updateUI() {
+      elements.coins.textContent = gameState.coins;
+      elements.treasuresFound.textContent = gameState.treasuresFound;
+      elements.playerLevel.textContent = gameState.playerLevel;
+      
+      // Update current tool display
+      const currentTool = TOOLS[gameState.equippedTool];
+      gameState.currentTool = currentTool;
+      elements.currentToolIcon.textContent = currentTool.icon;
+      elements.currentToolName.textContent = currentTool.name;
+      elements.currentToolPower.textContent = currentTool.powerDesc;
+      
+      // Update auxiliary tools display
+      renderAuxiliaryTools();
+    }
+
+    // Render auxiliary tools panel
+    function renderAuxiliaryTools() {
+      const auxiliaryContainer = document.getElementById('auxiliary-tools');
+      if (!auxiliaryContainer) return;
+      
+      let toolsHTML = '<div class="panel-title" style="font-size: 16px; margin: 15px 0 10px 0;">🔧 辅助道具</div>';
+      
+      // Show owned auxiliary tools
+      gameState.auxiliaryTools.forEach(toolId => {
+        const tool = TOOLS[toolId];
+        if (tool) {
+          let statusText = '✅ 已激活';
+          let buttonStyle = 'background: linear-gradient(45deg, #28A745, #20C997); opacity: 0.7;';
+          
+          toolsHTML += `
+            <div class="auxiliary-tool-item" style="
+              background: rgba(255,255,255,0.8);
+              border: 1px solid #8B4513;
+              border-radius: 8px;
+              padding: 8px;
+              margin-bottom: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            ">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">${tool.icon}</span>
+                <div>
+                  <div style="font-size: 12px; font-weight: bold; color: #654321;">${tool.name}</div>
+                  <div style="font-size: 10px; color: #666; opacity: 0.8;">${statusText}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      
+      // Show consumable items
+      Object.entries(gameState.consumableItems).forEach(([itemId, count]) => {
+        if (count > 0) {
+          const item = TOOLS[itemId];
+          if (item) {
+            toolsHTML += `
+              <div class="auxiliary-tool-item" style="
+                background: rgba(255,255,255,0.8);
+                border: 1px solid #8B4513;
+                border-radius: 8px;
+                padding: 8px;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+              ">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">${item.icon}</span>
+                  <div>
+                    <div style="font-size: 12px; font-weight: bold; color: #654321;">${item.name}</div>
+                    <div style="font-size: 10px; color: #666; opacity: 0.8;">拥有: ${count} 个</div>
+                  </div>
+                </div>
+                <button style="
+                  background: linear-gradient(45deg, #FF6B35, #F7931E);
+                  color: white;
+                  border: none;
+                  border-radius: 5px;
+                  padding: 4px 8px;
+                  font-size: 10px;
+                  cursor: pointer;
+                  font-weight: bold;
+                " onclick="useConsumable('${itemId}')">使用</button>
+              </div>
+            `;
+          }
+        }
+      });
+      
+      // Show active effects
+      if (gameState.activeEffects.length > 0) {
+        toolsHTML += '<div style="font-size: 14px; font-weight: bold; color: #FF6B35; margin: 10px 0 5px 0;">✨ 激活效果</div>';
+        gameState.activeEffects.forEach(effect => {
+          if (effect.type === 'energy_boost') {
+            toolsHTML += `
+              <div style="
+                background: linear-gradient(45deg, #FFD700, #FFA500);
+                color: #2D1B0A;
+                border-radius: 8px;
+                padding: 6px;
+                margin-bottom: 5px;
+                font-size: 11px;
+                font-weight: bold;
+                text-align: center;
+              ">
+                ⚡ 能量增强 (剩余${effect.remaining}次)
+              </div>
+            `;
+          }
+        });
+      }
+      
+      // If no auxiliary tools owned, show message
+      if (gameState.auxiliaryTools.length === 0 && Object.values(gameState.consumableItems).every(count => count === 0)) {
+        toolsHTML += `
+          <div style="
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            opacity: 0.7;
+          ">
+            🛠️ 暂无辅助道具<br>
+            在商店中购买吧！
+          </div>
+        `;
+      }
+      
+      auxiliaryContainer.innerHTML = toolsHTML;
+    }
+
+    // Generic consumable use function
+    function useConsumable(itemId) {
+      if (itemId === 'energy_drink') {
+        useEnergyDrink();
+      }
+      // Add more consumable types here in the future
+    }
+
+    // Shop Functions
+    function openShop() {
+      elements.shopModal.style.display = 'flex';
+      elements.shopCoins.textContent = gameState.coins;
+      renderShopItems();
+    }
+
+    function closeShop() {
+      elements.shopModal.style.display = 'none';
+    }
+
+    function renderShopItems() {
+      const shopHTML = Object.entries(TOOLS).map(([toolId, tool]) => {
+        if (tool.type === 'auxiliary') {
+          const isOwned = gameState.auxiliaryTools.includes(toolId);
+          const canAfford = gameState.coins >= tool.cost;
+          
+          let cardClass = 'tool-card';
+          if (isOwned) cardClass += ' owned';
+          
+          let buttonHTML = '';
+          if (!isOwned) {
+            buttonHTML = `
+              <div class="tool-card-price">💰 ${tool.cost} 金币</div>
+              <button class="tool-buy-btn" ${!canAfford ? 'disabled' : ''} onclick="buyAuxiliaryTool('${toolId}')">
+                ${canAfford ? '购买' : '金币不足'}
+              </button>
+            `;
+          } else {
+            buttonHTML = `
+              <div class="tool-card-price">✅ 已拥有</div>
+              <button class="tool-equipped">辅助工具</button>
+            `;
+          }
+          
+          return `
+            <div class="${cardClass}">
+              <span class="tool-card-icon">${tool.icon}</span>
+              <div class="tool-card-name">${tool.name}</div>
+              <div class="tool-card-description">${tool.description}</div>
+              <div class="tool-card-power">${tool.powerDesc}</div>
+              ${buttonHTML}
+            </div>
+          `;
+        } else if (tool.type === 'consumable') {
+          const quantity = gameState.consumableItems[toolId] || 0;
+          const canAfford = gameState.coins >= tool.cost;
+          
+          return `
+            <div class="tool-card">
+              <span class="tool-card-icon">${tool.icon}</span>
+              <div class="tool-card-name">${tool.name}</div>
+              <div class="tool-card-description">${tool.description}</div>
+              <div class="tool-card-power">${tool.powerDesc}</div>
+              <div class="tool-card-price">💰 ${tool.cost} 金币 | 拥有: ${quantity}</div>
+              <button class="tool-buy-btn" ${!canAfford ? 'disabled' : ''} onclick="buyConsumable('${toolId}')">
+                ${canAfford ? '购买' : '金币不足'}
+              </button>
+            </div>
+          `;
+        } else {
+          const isOwned = gameState.ownedTools.includes(toolId);
+          const isEquipped = gameState.equippedTool === toolId;
+          const canAfford = gameState.coins >= tool.cost;
+          
+          let cardClass = 'tool-card';
+          if (isOwned) cardClass += ' owned';
+          if (isEquipped) cardClass += ' equipped';
+          
+          let buttonHTML = '';
+          if (!isOwned && tool.cost > 0) {
+            buttonHTML = `
+              <div class="tool-card-price">💰 ${tool.cost} 金币</div>
+              <button class="tool-buy-btn" ${!canAfford ? 'disabled' : ''} onclick="buyTool('${toolId}')">
+                ${canAfford ? '购买' : '金币不足'}
+              </button>
+            `;
+          } else if (isOwned && !isEquipped) {
+            buttonHTML = `
+              <div class="tool-card-price">✅ 已拥有</div>
+              <button class="tool-equip-btn" onclick="equipTool('${toolId}')">装备</button>
+            `;
+          } else if (isEquipped) {
+            buttonHTML = `
+              <div class="tool-card-price">✅ 已拥有</div>
+              <button class="tool-equipped">当前装备</button>
+            `;
+          } else {
+            buttonHTML = `
+              <div class="tool-card-price">🆓 免费</div>
+              <button class="tool-equip-btn" onclick="equipTool('${toolId}')">装备</button>
+            `;
+          }
+          
+          return `
+            <div class="${cardClass}">
+              <span class="tool-card-icon">${tool.icon}</span>
+              <div class="tool-card-name">${tool.name}</div>
+              <div class="tool-card-description">${tool.description}</div>
+              <div class="tool-card-power">${tool.powerDesc}</div>
+              ${buttonHTML}
+            </div>
+          `;
+        }
+      }).join('');
+      
+      elements.shopGrid.innerHTML = shopHTML;
+    }
+
+    function buyTool(toolId) {
+      const tool = TOOLS[toolId];
+      if (!tool || gameState.coins < tool.cost || gameState.ownedTools.includes(toolId)) {
+        playSound('error');
+        return;
+      }
+      
+      gameState.coins -= tool.cost;
+      gameState.ownedTools.push(toolId);
+      
+      playSound('coin');
+      updateUI();
+      renderShopItems();
+      
+      // Show purchase feedback
+      setTimeout(() => {
+        alert(`🎉 成功购买 ${tool.name}！`);
+      }, 100);
+    }
+
+    function equipTool(toolId) {
+      if (!TOOLS[toolId] || !gameState.ownedTools.includes(toolId)) {
+        playSound('error');
+        return;
+      }
+      
+      gameState.equippedTool = toolId;
+      playSound('success');
+      updateUI();
+      renderShopItems();
+    }
+
+    // Inventory Functions
+    function openInventory() {
+      elements.inventoryModal.style.display = 'flex';
+      renderInventory();
+    }
+
+    function closeInventory() {
+      elements.inventoryModal.style.display = 'none';
+    }
+
+    function renderInventory() {
+      if (gameState.inventory.length === 0) {
+        elements.inventoryGrid.innerHTML = `
+          <div class="empty-inventory">
+            <span class="empty-inventory-icon">📦</span>
+            <h3>背包空空如也</h3>
+            <p>去挖掘一些宝物吧！</p>
+          </div>
+        `;
+        return;
+      }
+
+      const inventoryHTML = gameState.inventory.map((treasure, index) => `
+        <div class="treasure-item">
+          <span class="treasure-item-icon">${treasure.icon}</span>
+          <div class="treasure-item-name">${treasure.name}</div>
+          <div class="treasure-item-desc">${treasure.desc}</div>
+          <div class="treasure-item-value">价值: ${treasure.value} 金币</div>
+        </div>
+      `).join('');
+      
+      elements.inventoryGrid.innerHTML = inventoryHTML;
+    }
+
+    // Market Functions
+    function openMarket() {
+      elements.marketModal.style.display = 'flex';
+      elements.marketCoins.textContent = gameState.coins;
+      renderMarket();
+    }
+
+    function closeMarket() {
+      elements.marketModal.style.display = 'none';
+    }
+
+    function renderMarket() {
+      if (gameState.inventory.length === 0) {
+        elements.marketGrid.innerHTML = `
+          <div class="empty-market">
+            <span class="empty-market-icon">🏪</span>
+            <h3>没有可出售的宝物</h3>
+            <p>先去挖掘一些宝物，然后回来出售吧！</p>
+          </div>
+        `;
+        return;
+      }
+
+      const marketHTML = gameState.inventory.map((treasure, index) => {
+        // Calculate market price with some fluctuation (80%-120% of base value)
+        const fluctuation = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+        const marketPrice = Math.floor(treasure.value * fluctuation);
+        
+        // Show potential bonus if market insider is owned
+        let bonusText = '';
+        if (gameState.auxiliaryTools.includes('market_insider')) {
+          bonusText = ' 📈 (内幕加成)';
+        }
+        
+        return `
+          <div class="treasure-item">
+            <span class="treasure-item-icon">${treasure.icon}</span>
+            <div class="treasure-item-name">${treasure.name}</div>
+            <div class="treasure-item-desc">${treasure.desc}</div>
+            <div class="treasure-item-value">市场价: ${marketPrice} 金币${bonusText}</div>
+            <button class="sell-btn" onclick="enhancedSellTreasure(${index}, ${marketPrice})">
+              💰 出售 ${marketPrice}金币
+            </button>
+          </div>
+        `;
+      }).join('');
+      
+      elements.marketGrid.innerHTML = marketHTML;
+    }
+
+    function sellTreasure(index, price) {
+      if (index < 0 || index >= gameState.inventory.length) {
+        playSound('error');
+        return;
+      }
+      
+      const treasure = gameState.inventory[index];
+      gameState.coins += price;
+      gameState.inventory.splice(index, 1);
+      
+      playSound('coin');
+      updateUI();
+      renderMarket();
+      
+      // Show sell feedback
+      setTimeout(() => {
+        alert(`💰 成功出售 ${treasure.name}！获得 ${price} 金币`);
+      }, 100);
+    }
+
+    // Auxiliary tool functions
+    function buyAuxiliaryTool(toolId) {
+      const tool = TOOLS[toolId];
+      if (!tool || gameState.coins < tool.cost || gameState.auxiliaryTools.includes(toolId)) {
+        playSound('error');
+        return;
+      }
+      
+      gameState.coins -= tool.cost;
+      gameState.auxiliaryTools.push(toolId);
+      
+      playSound('coin');
+      updateUI();
+      renderShopItems();
+      
+      setTimeout(() => {
+        alert(`🎉 成功购买辅助工具 ${tool.name}！`);
+      }, 100);
+    }
+
+    function buyConsumable(toolId) {
+      const tool = TOOLS[toolId];
+      if (!tool || gameState.coins < tool.cost) {
+        playSound('error');
+        return;
+      }
+      
+      gameState.coins -= tool.cost;
+      if (!gameState.consumableItems[toolId]) {
+        gameState.consumableItems[toolId] = 0;
+      }
+      gameState.consumableItems[toolId]++;
+      
+      playSound('coin');
+      updateUI();
+      renderShopItems();
+      
+      setTimeout(() => {
+        alert(`⚡ 成功购买 ${tool.name}！现在拥有 ${gameState.consumableItems[toolId]} 个`);
+      }, 100);
+    }
+
+    // Enhanced treasure creation with auxiliary effects
+    function enhancedCreateTreasureSpot(id, maxWidth, maxHeight) {
+      let words = getAllWords();
+      
+      // Lucky charm effect - increase rare treasure chance
+      if (gameState.auxiliaryTools.includes('lucky_charm')) {
+        const rarityBoost = Math.random() < 0.25; // 25% chance
+        if (rarityBoost) {
+          // Filter to higher value words
+          words = words.filter(w => w.value >= 100);
+          if (words.length === 0) words = getAllWords();
+        }
+      }
+      
+      const word = words[Math.floor(Math.random() * words.length)];
+      
+      // Determine treasure type based on word value
+      let type = 'bronze';
+      if (word.value >= 300) type = 'diamond';
+      else if (word.value >= 150) type = 'gold';
+      else if (word.value >= 60) type = 'silver';
+      
+      const treasureConfig = TREASURE_VALUES[type];
+      const hitsRequired = treasureConfig.hits[Math.floor(Math.random() * treasureConfig.hits.length)];
+      
+      return {
+        id,
+        word,
+        type,
+        value: word.value,
+        hitsRequired,
+        hitsRemaining: hitsRequired,
+        x: Math.random() * (maxWidth - 60),
+        y: Math.random() * (maxHeight - 60),
+        discovered: false,
+        showValue: gameState.auxiliaryTools.includes('treasure_detector')
+      };
+    }
+
+    // Enhanced sell function with market insider effect
+    function enhancedSellTreasure(index, basePrice) {
+      if (index < 0 || index >= gameState.inventory.length) {
+        playSound('error');
+        return;
+      }
+      
+      const treasure = gameState.inventory[index];
+      let finalPrice = basePrice;
+      
+      // Market insider effect - 10-30% bonus
+      if (gameState.auxiliaryTools.includes('market_insider')) {
+        const bonus = 1.1 + Math.random() * 0.2; // 1.1 to 1.3 multiplier
+        finalPrice = Math.floor(basePrice * bonus);
+      }
+      
+      gameState.coins += finalPrice;
+      gameState.inventory.splice(index, 1);
+      
+      playSound('coin');
+      updateUI();
+      renderMarket();
+      
+      const bonusText = finalPrice > basePrice ? ` (内幕加成!)` : '';
+      setTimeout(() => {
+        alert(`💰 成功出售 ${treasure.name}！获得 ${finalPrice} 金币${bonusText}`);
+      }, 100);
+    }
+
+    // Use energy drink function
+    function useEnergyDrink() {
+      if (gameState.consumableItems['energy_drink'] > 0) {
+        gameState.consumableItems['energy_drink']--;
+        gameState.activeEffects.push({
+          type: 'energy_boost',
+          remaining: 1 // Next dig gets +1 power
+        });
+        
+        playSound('magic');
+        alert('⚡ 使用能量饮料！下次挖掘威力+1！');
+        updateUI();
+        renderShopItems();
+      } else {
+        playSound('error');
+        alert('⚡ 没有能量饮料了！到商店购买吧！');
+      }
+    }
+
+    // Make functions global for onclick handlers
+    window.buyTool = buyTool;
+    window.equipTool = equipTool;
+    window.sellTreasure = sellTreasure;
+    window.buyAuxiliaryTool = buyAuxiliaryTool;
+    window.buyConsumable = buyConsumable;
+    window.enhancedSellTreasure = enhancedSellTreasure;
+    window.useEnergyDrink = useEnergyDrink;
+    window.useConsumable = useConsumable;
+
+    // Speech Recognition (simplified)
+    function setupSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+      
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      
+      recognition.onresult = (event) => {
+        const said = event.results[0][0].transcript.trim().toLowerCase();
+        const target = gameState.currentTreasure?.word.name.toLowerCase();
+        
+        if (said === target) {
+          handleCorrectAnswer();
+        } else {
+          playSound('error');
+          elements.learningFeedback.textContent = `❌ 你说的是"${said}"，正确的是"${target}"`;
+          elements.learningFeedback.className = 'feedback error';
+          
+          // Auto-play correct pronunciation after 1 second
+          setTimeout(() => {
+            if (gameState.currentTreasure) {
+              speakWord(gameState.currentTreasure.word.name);
+            }
+          }, 1000);
+        }
+      };
+      
+      elements.speakBtn.addEventListener('click', () => {
+        playSound('click');
+        if (!gameState.recognizing) {
+          gameState.recognizing = true;
+          elements.speakBtn.textContent = '🎙️ 听中...';
+          recognition.start();
+        }
+      });
+      
+      recognition.onend = () => {
+        gameState.recognizing = false;
+        elements.speakBtn.textContent = '开始语音识别';
+      };
+    }
+
+    // Text-to-Speech
+    function speakWord(word) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Setup Event Listeners
+    function setupEventListeners() {
+      setupSpeechRecognition();
+      
+      elements.listenBtn.addEventListener('click', () => {
+        playSound('click');
+        if (gameState.currentTreasure) {
+          speakWord(gameState.currentTreasure.word.name);
+        }
+      });
+      
+      elements.submitWordBtn.addEventListener('click', () => {
+        playSound('click');
+        const input = elements.wordInput.value.trim().toLowerCase();
+        const target = gameState.currentTreasure?.word.name.toLowerCase();
+        
+        if (input === target) {
+          handleCorrectAnswer();
+        } else {
+          playSound('error');
+          elements.learningFeedback.textContent = `❌ 输入错误！正确的是"${target}"`;
+          elements.learningFeedback.className = 'feedback error';
+          
+          // Auto-play correct pronunciation
+          setTimeout(() => {
+            if (gameState.currentTreasure) {
+              speakWord(gameState.currentTreasure.word.name);
+            }
+          }, 1000);
+        }
+        elements.wordInput.value = '';
+      });
+      
+      elements.wordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          elements.submitWordBtn.click();
+        }
+      });
+      
+      // Close modal when clicking outside
+      elements.learningModal.addEventListener('click', (e) => {
+        if (e.target === elements.learningModal) {
+          hideLearningModal();
+        }
+      });
+      
+      // Shop, inventory, and market buttons
+      elements.shopBtn.addEventListener('click', () => {
+        playSound('click');
+        openShop();
+      });
+      
+      elements.shopClose.addEventListener('click', () => {
+        playSound('click');
+        closeShop();
+      });
+      
+      // Close shop when clicking outside
+      elements.shopModal.addEventListener('click', (e) => {
+        if (e.target === elements.shopModal) {
+          closeShop();
+        }
+      });
+      
+      elements.inventoryBtn.addEventListener('click', () => {
+        playSound('click');
+        openInventory();
+      });
+      
+      elements.inventoryClose.addEventListener('click', () => {
+        playSound('click');
+        closeInventory();
+      });
+      
+      // Close inventory when clicking outside
+      elements.inventoryModal.addEventListener('click', (e) => {
+        if (e.target === elements.inventoryModal) {
+          closeInventory();
+        }
+      });
+      
+      elements.marketBtn.addEventListener('click', () => {
+        playSound('click');
+        openMarket();
+      });
+      
+      elements.marketClose.addEventListener('click', () => {
+        playSound('click');
+        closeMarket();
+      });
+      
+      // Close market when clicking outside
+      elements.marketModal.addEventListener('click', (e) => {
+        if (e.target === elements.marketModal) {
+          closeMarket();
+        }
+      });
+    }
+
+    // Add treasure collected animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes treasureCollected {
+        0% { transform: scale(1) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.3) rotate(180deg); opacity: 0.7; }
+        100% { transform: scale(0) rotate(360deg); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Start the game
+    initGame();
+  </script>
+</body>
+</html>
