@@ -3292,8 +3292,24 @@
     `;
     document.head.appendChild(style);
 
-    // Start the game
-    initGame();
+    // Start the game when DOM is ready
+    console.log('Script loaded, document.readyState:', document.readyState);
+    
+    try {
+      if (document.readyState === 'loading') {
+        console.log('Waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', () => {
+          console.log('DOMContentLoaded fired, initializing game...');
+          initGame();
+        });
+      } else {
+        console.log('DOM already ready, initializing game...');
+        initGame();
+      }
+    } catch (error) {
+      console.error('Error starting game:', error);
+      document.body.innerHTML = '<h1 style="color:red;text-align:center;margin:50px;">游戏启动失败: ' + error.message + '</h1>';
+    }
   </script>
 </body>
 </html>
