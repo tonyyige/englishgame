@@ -1261,6 +1261,21 @@
           </button>
         </div>
         
+        <div class="game-controls" style="
+          background: rgba(255,255,255,0.8);
+          border: 1px solid #8B4513;
+          border-radius: 8px;
+          padding: 10px;
+          margin-top: 15px;
+          font-size: 12px;
+          color: #654321;
+        ">
+          <div style="font-weight: bold; margin-bottom: 5px;">🎮 游戏控制</div>
+          <div>🎹 WASD：移动角色</div>
+          <div>␣ 空格：与附近物体交互</div>
+          <div>👁️ 靕色高亮：可交互区域</div>
+        </div>
+        
         <div class="auxiliary-tools" id="auxiliary-tools">
           <div class="panel-title" style="font-size: 16px; margin: 15px 0 10px 0;">🔧 辅助道具</div>
           <!-- Auxiliary tools will be rendered here -->
@@ -1907,6 +1922,21 @@
 
     // Initialize Game
     function initGame() {
+      // Ensure player character exists and is positioned correctly
+      const dirtArea = elements.dirtArea;
+      let playerElement = dirtArea.querySelector('#player-character');
+      if (!playerElement) {
+        playerElement = document.createElement('div');
+        playerElement.className = 'player-character';
+        playerElement.id = 'player-character';
+        playerElement.textContent = '🚀';
+        dirtArea.appendChild(playerElement);
+      }
+      
+      // Set initial position
+      playerElement.style.left = gameState.player.x + 'px';
+      playerElement.style.top = gameState.player.y + 'px';
+      
       generateTreasureSpots();
       updateUI();
       setupEventListeners();
@@ -1918,9 +1948,29 @@
       const areaWidth = 500; // Approximate width
       const areaHeight = 500; // Approximate height
       
-      // Clear existing spots
+      // Clear existing spots but preserve player
       gameState.treasureSpots = [];
-      dirtArea.innerHTML = '';
+      gameState.enemies = [];
+      
+      // Clear all elements except player
+      const existingElements = dirtArea.querySelectorAll('.treasure-spot, .enemy-character');
+      existingElements.forEach(element => {
+        if (element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      });
+      
+      // Ensure player character exists
+      let playerElement = dirtArea.querySelector('#player-character');
+      if (!playerElement) {
+        playerElement = document.createElement('div');
+        playerElement.className = 'player-character';
+        playerElement.id = 'player-character';
+        playerElement.textContent = '🚀';
+        playerElement.style.left = gameState.player.x + 'px';
+        playerElement.style.top = gameState.player.y + 'px';
+        dirtArea.appendChild(playerElement);
+      }
       
       // Generate 12-15 treasure spots
       const numSpots = 12 + Math.floor(Math.random() * 4);
@@ -1962,8 +2012,83 @@
         spotElement.appendChild(buriedDiv);
         dirtArea.appendChild(spotElement);
         
-        spotElement.addEventListener('click', () => digTreasure(i));
+        spotElement.addEventListener('click', () => {
+          // Always allow click, but check distance inside digTreasure
+          digTreasure(i);
+        });
       }
+      
+      // Generate enemies
+      generateEnemies(areaWidth, areaHeight);
+    }
+    
+    // Generate enemies
+    function generateEnemies(areaWidth, areaHeight) {
+      const numEnemies = 3 + Math.floor(Math.random() * 3); // 3-5 enemies
+      
+      for (let i = 0; i < numEnemies; i++) {
+        const enemy = createEnemy(i, areaWidth, areaHeight);
+        gameState.enemies.push(enemy);
+        
+        const enemyElement = document.createElement('div');
+        enemyElement.className = 'enemy-character';
+        enemyElement.style.left = enemy.x + 'px';
+        enemyElement.style.top = enemy.y + 'px';
+        enemyElement.dataset.enemyId = i;
+        enemyElement.textContent = enemy.icon;
+        
+        // Add HP bar
+        const hpBar = document.createElement('div');
+        hpBar.className = 'enemy-hp-bar';
+        const hpFill = document.createElement('div');
+        hpFill.className = 'hp-fill';
+        hpFill.style.width = '100%';
+        hpBar.appendChild(hpFill);
+        enemyElement.appendChild(hpBar);
+        
+        elements.dirtArea.appendChild(enemyElement);
+        
+        enemyElement.addEventListener('click', () => {
+          const distance = getDistance(
+            gameState.player.x + 20, gameState.player.y + 20,
+            enemy.x + 17, enemy.y + 17
+          );
+          if (distance < 50) {
+            startBattle(enemy);
+          }
+        });
+      }
+    }
+    
+    // Create individual enemy
+    function createEnemy(id, maxWidth, maxHeight) {
+      const enemyTypes = Object.keys(ENEMY_TYPES);
+      const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+      const enemyTemplate = ENEMY_TYPES[randomType];
+      
+      // Avoid spawning too close to player
+      let x, y, distance;
+      do {
+        x = Math.random() * (maxWidth - 60);
+        y = Math.random() * (maxHeight - 60);
+        distance = getDistance(gameState.player.x, gameState.player.y, x, y);
+      } while (distance < 80); // Minimum distance from player
+      
+      return {
+        id,
+        type: randomType,
+        name: enemyTemplate.name,
+        icon: enemyTemplate.icon,
+        hp: enemyTemplate.hp,
+        maxHp: enemyTemplate.hp,
+        attack: enemyTemplate.attack,
+        defense: enemyTemplate.defense,
+        exp: enemyTemplate.exp,
+        gold: enemyTemplate.gold,
+        x,
+        y,
+        defeated: false
+      };
     }
 
     // Check if current level is complete
@@ -2063,6 +2188,56 @@
     function digTreasure(spotId) {
       const spot = gameState.treasureSpots[spotId];
       if (!spot || spot.discovered) return;
+      
+      // Check proximity
+      const distance = getDistance(
+        gameState.player.x + 20, gameState.player.y + 20,
+        spot.x + 25, spot.y + 25
+      );
+      
+      if (distance >= 60) {
+        playSound('click');
+        // Show temporary message
+        const messageElement = document.createElement('div');
+        messageElement.textContent = '🚶 靠近一些再挖掘';
+        messageElement.style.cssText = `
+          position: fixed;
+          top: 20%;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+          color: white;
+          padding: 8px 15px;
+          border-radius: 20px;
+          font-weight: bold;
+          font-size: 14px;
+          z-index: 9999;
+          pointer-events: none;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+          animation: slideDown 0.3s ease;
+        `;
+        
+        // Add CSS animation
+        if (!document.querySelector('#proximityMessageStyle')) {
+          const style = document.createElement('style');
+          style.id = 'proximityMessageStyle';
+          style.textContent = `
+            @keyframes slideDown {
+              0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+              100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(messageElement);
+        setTimeout(() => {
+          if (messageElement.parentNode) {
+            messageElement.parentNode.removeChild(messageElement);
+          }
+        }, 1500);
+        return; // Too far away
+      }
       
       const tool = gameState.currentTool;
       let damage = tool.power;
@@ -2271,9 +2446,24 @@
       renderAuxiliaryTools();
       
       // Update player character position
-      if (elements.playerCharacter) {
-        elements.playerCharacter.style.left = gameState.player.x + 'px';
-        elements.playerCharacter.style.top = gameState.player.y + 'px';
+      let playerElement = elements.playerCharacter || document.getElementById('player-character');
+      if (playerElement) {
+        playerElement.style.left = gameState.player.x + 'px';
+        playerElement.style.top = gameState.player.y + 'px';
+      } else {
+        // Recreate player if missing
+        const dirtArea = elements.dirtArea;
+        if (dirtArea) {
+          playerElement = document.createElement('div');
+          playerElement.className = 'player-character';
+          playerElement.id = 'player-character';
+          playerElement.textContent = '🚀';
+          playerElement.style.left = gameState.player.x + 'px';
+          playerElement.style.top = gameState.player.y + 'px';
+          dirtArea.appendChild(playerElement);
+          // Update the reference
+          elements.playerCharacter = playerElement;
+        }
       }
     }
 
@@ -3096,6 +3286,281 @@
       });
     }
 
+    // Battle System
+    function startBattle(enemy) {
+      if (gameState.inBattle || enemy.defeated) return;
+      
+      gameState.inBattle = true;
+      gameState.currentEnemy = enemy;
+      gameState.battleTurn = 'player';
+      
+      // Show battle modal
+      elements.battleModal.style.display = 'flex';
+      
+      // Update battle UI
+      updateBattleUI();
+      
+      // Add battle log message
+      addBattleLog(`遭遇了${enemy.name}！战斗开始！`, 'system');
+      
+      playSound('treasure_found'); // Battle start sound
+    }
+    
+    function updateBattleUI() {
+      const player = gameState.player;
+      const enemy = gameState.currentEnemy;
+      
+      if (!enemy) return;
+      
+      // Update player stats
+      elements.battlePlayerStats.textContent = `HP: ${player.hp}/${player.maxHp} | ATK: ${player.attack} | DEF: ${player.defense}`;
+      elements.battlePlayerHp.style.width = `${(player.hp / player.maxHp) * 100}%`;
+      
+      // Update enemy stats
+      elements.battleEnemyName.textContent = enemy.name;
+      elements.battleEnemyChar.textContent = enemy.icon;
+      elements.battleEnemyStats.textContent = `HP: ${enemy.hp}/${enemy.maxHp} | ATK: ${enemy.attack}`;
+      elements.battleEnemyHp.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
+      
+      // Enable/disable action buttons based on turn
+      const buttons = elements.battleActions.querySelectorAll('.battle-btn');
+      buttons.forEach(btn => {
+        btn.disabled = gameState.battleTurn !== 'player';
+      });
+    }
+    
+    function addBattleLog(message, type = 'normal') {
+      const logElement = document.createElement('div');
+      logElement.className = `battle-message ${type}`;
+      logElement.textContent = message;
+      
+      elements.battleLog.appendChild(logElement);
+      elements.battleLog.scrollTop = elements.battleLog.scrollHeight;
+    }
+    
+    function playerAttack() {
+      if (gameState.battleTurn !== 'player' || !gameState.currentEnemy) return;
+      
+      const player = gameState.player;
+      const enemy = gameState.currentEnemy;
+      
+      // Calculate damage
+      let damage = Math.max(1, player.attack - enemy.defense + Math.floor(Math.random() * 5) - 2);
+      
+      // Apply card effects
+      const powerBoost = gameState.activeEffects.find(e => e.type === 'power_boost');
+      if (powerBoost) {
+        damage *= powerBoost.multiplier;
+        powerBoost.remaining--;
+        if (powerBoost.remaining <= 0) {
+          gameState.activeEffects = gameState.activeEffects.filter(e => e !== powerBoost);
+        }
+      }
+      
+      enemy.hp = Math.max(0, enemy.hp - damage);
+      
+      // Update battle UI
+      updateBattleUI();
+      
+      // Add to battle log
+      addBattleLog(`你攻击了${enemy.name}，造成了${damage}点伤害！`, 'player-action');
+      
+      // Check if enemy defeated
+      if (enemy.hp <= 0) {
+        enemyDefeated();
+        return;
+      }
+      
+      // Enemy turn
+      gameState.battleTurn = 'enemy';
+      setTimeout(enemyAttack, 1000);
+    }
+    
+    function playerDefend() {
+      if (gameState.battleTurn !== 'player') return;
+      
+      // Restore some HP and reduce incoming damage next turn
+      const healAmount = Math.floor(gameState.player.maxHp * 0.1);
+      gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + healAmount);
+      
+      // Add defense buff
+      gameState.activeEffects.push({
+        type: 'defense_boost',
+        remaining: 1
+      });
+      
+      addBattleLog(`你进入防御姿态，恢复了${healAmount}点生命！`, 'player-action');
+      updateBattleUI();
+      
+      // Enemy turn
+      gameState.battleTurn = 'enemy';
+      setTimeout(enemyAttack, 1000);
+    }
+    
+    function useSkillInBattle() {
+      if (gameState.battleTurn !== 'player') return;
+      
+      // Find usable cards
+      const usableCards = gameState.equippedCards.filter(cardId => {
+        const cooldown = gameState.cardCooldowns[cardId] || 0;
+        return cooldown === 0;
+      });
+      
+      if (usableCards.length === 0) {
+        addBattleLog('没有可用的技能卡！', 'system');
+        return;
+      }
+      
+      // Use first available card (simplified)
+      const cardId = usableCards[0];
+      const card = SKILL_CARDS[cardId];
+      
+      if (card) {
+        useSkillCard(cardId);
+        addBattleLog(`使用了技能卡：${card.name}！`, 'player-action');
+        
+        // Enemy turn
+        gameState.battleTurn = 'enemy';
+        setTimeout(enemyAttack, 1000);
+      }
+    }
+    
+    function fleeBattle() {
+      if (gameState.battleTurn !== 'player') return;
+      
+      const fleeChance = 0.7; // 70% success rate
+      if (Math.random() < fleeChance) {
+        addBattleLog('成功逃跑了！', 'system');
+        endBattle(false);
+      } else {
+        addBattleLog('逃跑失败！', 'system');
+        // Enemy gets a free attack
+        gameState.battleTurn = 'enemy';
+        setTimeout(enemyAttack, 500);
+      }
+    }
+    
+    function enemyAttack() {
+      if (gameState.battleTurn !== 'enemy' || !gameState.currentEnemy) return;
+      
+      const player = gameState.player;
+      const enemy = gameState.currentEnemy;
+      
+      // Calculate damage
+      let damage = Math.max(1, enemy.attack - player.defense + Math.floor(Math.random() * 3) - 1);
+      
+      // Apply defense boost
+      const defenseBoost = gameState.activeEffects.find(e => e.type === 'defense_boost');
+      if (defenseBoost) {
+        damage = Math.floor(damage * 0.5); // 50% damage reduction
+        defenseBoost.remaining--;
+        if (defenseBoost.remaining <= 0) {
+          gameState.activeEffects = gameState.activeEffects.filter(e => e !== defenseBoost);
+        }
+      }
+      
+      player.hp = Math.max(0, player.hp - damage);
+      
+      // Update battle UI
+      updateBattleUI();
+      
+      // Add to battle log
+      addBattleLog(`${enemy.name}攻击了你，造成了${damage}点伤害！`, 'enemy-action');
+      
+      // Check if player defeated
+      if (player.hp <= 0) {
+        playerDefeated();
+        return;
+      }
+      
+      // Player turn
+      gameState.battleTurn = 'player';
+    }
+    
+    function enemyDefeated() {
+      const enemy = gameState.currentEnemy;
+      
+      // Mark enemy as defeated
+      enemy.defeated = true;
+      
+      // Remove enemy from visual
+      const enemyElement = document.querySelector(`[data-enemy-id="${enemy.id}"]`);
+      if (enemyElement) {
+        enemyElement.style.animation = 'treasureCollected 0.5s ease-out forwards';
+        setTimeout(() => {
+          if (enemyElement.parentNode) {
+            enemyElement.parentNode.removeChild(enemyElement);
+          }
+        }, 500);
+      }
+      
+      // Give rewards
+      gameState.coins += enemy.gold;
+      gameState.player.exp += enemy.exp;
+      
+      // Check level up
+      checkLevelUp();
+      
+      addBattleLog(`击败了${enemy.name}！获得了${enemy.gold}金币和${enemy.exp}经验！`, 'system');
+      
+      // Play victory sound
+      playSound('success');
+      
+      setTimeout(() => {
+        endBattle(true);
+      }, 2000);
+    }
+    
+    function playerDefeated() {
+      // Player loses some gold
+      const goldLoss = Math.floor(gameState.coins * 0.1);
+      gameState.coins = Math.max(0, gameState.coins - goldLoss);
+      
+      // Restore player HP
+      gameState.player.hp = Math.floor(gameState.player.maxHp * 0.5);
+      
+      addBattleLog(`你被击败了！失去了${goldLoss}金币。`, 'system');
+      
+      playSound('error');
+      
+      setTimeout(() => {
+        endBattle(false);
+      }, 2000);
+    }
+    
+    function endBattle(victory) {
+      gameState.inBattle = false;
+      gameState.currentEnemy = null;
+      gameState.battleTurn = 'player';
+      
+      elements.battleModal.style.display = 'none';
+      
+      // Clear battle log
+      elements.battleLog.innerHTML = '';
+      
+      updateUI();
+    }
+    
+    // Level up system
+    function checkLevelUp() {
+      const player = gameState.player;
+      
+      while (player.exp >= player.expToNext) {
+        player.exp -= player.expToNext;
+        player.level++;
+        
+        // Increase stats
+        player.maxHp += 10;
+        player.hp = player.maxHp; // Full heal on level up
+        player.attack += 2;
+        player.defense += 1;
+        player.expToNext = Math.floor(player.expToNext * 1.2);
+        
+        playSound('level_up');
+        alert(`🎉 等级提升！现在是${player.level}级！\n生命值+10，攻击力+2，防御力+1`);
+      }
+    }
+
     // Make functions global for onclick handlers
     window.buyTool = buyTool;
     window.equipTool = equipTool;
@@ -3110,6 +3575,10 @@
     window.unequipCard = unequipCard;
     window.unequipCardById = unequipCardById;
     window.useSkillCard = useSkillCard;
+    window.playerAttack = playerAttack;
+    window.playerDefend = playerDefend;
+    window.useSkillInBattle = useSkillInBattle;
+    window.fleeBattle = fleeBattle;
 
     // Speech Recognition (simplified)
     function setupSpeechRecognition() {
@@ -3165,9 +3634,147 @@
       }
     }
 
+    // Keyboard Movement System
+    let keysPressed = {};
+    const MOVEMENT_SPEED = 3;
+    const GAME_BOUNDS = { width: 500, height: 500 };
+    
+    function setupKeyboardControls() {
+      document.addEventListener('keydown', (e) => {
+        if (gameState.inBattle) return; // Disable movement during battle
+        
+        keysPressed[e.key.toLowerCase()] = true;
+        
+        // Prevent default browser behavior for WASD keys
+        if (['w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
+          e.preventDefault();
+        }
+      });
+      
+      document.addEventListener('keyup', (e) => {
+        keysPressed[e.key.toLowerCase()] = false;
+      });
+      
+      // Movement loop
+      setInterval(updatePlayerMovement, 16); // ~60 FPS
+    }
+    
+    function updatePlayerMovement() {
+      if (gameState.inBattle) return;
+      
+      let newX = gameState.player.x;
+      let newY = gameState.player.y;
+      
+      // Handle WASD movement
+      if (keysPressed['w'] || keysPressed['arrowup']) {
+        newY -= MOVEMENT_SPEED;
+      }
+      if (keysPressed['s'] || keysPressed['arrowdown']) {
+        newY += MOVEMENT_SPEED;
+      }
+      if (keysPressed['a'] || keysPressed['arrowleft']) {
+        newX -= MOVEMENT_SPEED;
+      }
+      if (keysPressed['d'] || keysPressed['arrowright']) {
+        newX += MOVEMENT_SPEED;
+      }
+      
+      // Keep player within bounds
+      newX = Math.max(20, Math.min(GAME_BOUNDS.width - 40, newX));
+      newY = Math.max(20, Math.min(GAME_BOUNDS.height - 40, newY));
+      
+      // Update position if changed
+      if (newX !== gameState.player.x || newY !== gameState.player.y) {
+        gameState.player.x = newX;
+        gameState.player.y = newY;
+        
+        // Update visual position
+        if (elements.playerCharacter) {
+          elements.playerCharacter.style.left = newX + 'px';
+          elements.playerCharacter.style.top = newY + 'px';
+        }
+        
+        // Check for proximity interactions
+        checkProximityInteractions();
+      }
+    }
+    
+    // Proximity Interaction System
+    function checkProximityInteractions() {
+      const playerRect = {
+        x: gameState.player.x,
+        y: gameState.player.y,
+        width: 40,
+        height: 40
+      };
+      
+      // Check treasure proximity
+      gameState.treasureSpots.forEach((spot, index) => {
+        if (spot.discovered) return;
+        
+        const distance = getDistance(
+          playerRect.x + 20, playerRect.y + 20,
+          spot.x + 25, spot.y + 25
+        );
+        
+        const spotElement = document.querySelector(`[data-spot-id="${index}"]`);
+        if (spotElement) {
+          if (distance < 60) {
+            // Show interaction hint
+            spotElement.style.boxShadow = '0 0 15px #FFD700';
+            spotElement.style.cursor = 'pointer';
+            spotElement.style.transform = 'scale(1.05)';
+            
+            // Auto-dig on space key or click when close
+            if (keysPressed[' '] || keysPressed['space']) {
+              digTreasure(index);
+            }
+          } else {
+            // Remove interaction hint
+            spotElement.style.boxShadow = '';
+            spotElement.style.cursor = 'not-allowed';
+            spotElement.style.transform = 'scale(1)';
+          }
+        }
+      });
+      
+      // Check enemy proximity
+      gameState.enemies.forEach((enemy, index) => {
+        if (enemy.defeated) return;
+        
+        const distance = getDistance(
+          playerRect.x + 20, playerRect.y + 20,
+          enemy.x + 17, enemy.y + 17
+        );
+        
+        const enemyElement = document.querySelector(`[data-enemy-id="${index}"]`);
+        if (enemyElement) {
+          if (distance < 50) {
+            // Show battle hint
+            enemyElement.style.boxShadow = '0 0 15px #FF4444';
+            enemyElement.style.cursor = 'pointer';
+            
+            // Auto-battle on space key
+            if (keysPressed[' '] || keysPressed['space']) {
+              startBattle(enemy);
+            }
+          } else {
+            // Remove battle hint
+            enemyElement.style.boxShadow = '';
+            enemyElement.style.cursor = 'default';
+          }
+        }
+      });
+    }
+    
+    function getDistance(x1, y1, x2, y2) {
+      return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
+
     // Setup Event Listeners
     function setupEventListeners() {
       setupSpeechRecognition();
+      setupKeyboardControls();
       
       elements.listenBtn.addEventListener('click', () => {
         playSound('click');
