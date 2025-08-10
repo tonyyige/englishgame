@@ -209,6 +209,11 @@
       color: white;
     }
     
+    .cards-btn {
+      background: linear-gradient(45deg, #9B59B6, #8E44AD);
+      color: white;
+    }
+    
     .action-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 12px rgba(0,0,0,0.2);
@@ -619,6 +624,211 @@
       backdrop-filter: blur(5px);
     }
     
+    /* Cards Modal */
+    .cards-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .cards-content {
+      background: linear-gradient(145deg, #9B59B6, #8E44AD);
+      border: 3px solid var(--treasure-gold);
+      border-radius: 20px;
+      width: min(95vw, 900px);
+      max-height: 90vh;
+      overflow-y: auto;
+      color: white;
+    }
+    
+    .cards-header {
+      background: linear-gradient(90deg, var(--treasure-gold), #FFED4A, var(--treasure-gold));
+      color: #2D1B0A;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 17px 17px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .cards-info {
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      margin: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    
+    .equipped-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      min-height: 120px;
+    }
+    
+    .skill-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .skill-card:hover {
+      background: linear-gradient(145deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+      transform: translateY(-5px);
+    }
+    
+    .skill-card.owned {
+      border-color: var(--treasure-silver);
+    }
+    
+    .skill-card.equipped {
+      border-color: var(--treasure-gold);
+      background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1));
+      box-shadow: 0 0 20px rgba(255,215,0,0.3);
+    }
+    
+    .skill-card.common {
+      border-color: #888888;
+    }
+    
+    .skill-card.rare {
+      border-color: #3498db;
+      box-shadow: 0 0 15px rgba(52,152,219,0.3);
+    }
+    
+    .skill-card.epic {
+      border-color: #9b59b6;
+      box-shadow: 0 0 15px rgba(155,89,182,0.3);
+    }
+    
+    .skill-card-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .skill-card-name {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--treasure-gold);
+    }
+    
+    .skill-card-description {
+      font-size: 13px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+    
+    .skill-card-cooldown {
+      background: rgba(255,255,255,0.2);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+    
+    .skill-card-price {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+      margin-bottom: 10px;
+    }
+    
+    .skill-card-btn {
+      background: linear-gradient(45deg, #28A745, #20C997);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      font-size: 12px;
+    }
+    
+    .skill-card-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    
+    .skill-card-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .skill-card-btn.equip {
+      background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+    }
+    
+    .skill-card-btn.unequip {
+      background: linear-gradient(45deg, #FFA726, #FFB74D);
+    }
+    
+    .skill-card-btn.use {
+      background: linear-gradient(45deg, #9B59B6, #8E44AD);
+    }
+    
+    .skill-card-btn.on-cooldown {
+      background: linear-gradient(45deg, #666, #555);
+      cursor: not-allowed;
+    }
+    
+    .empty-slot {
+      background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      border: 2px dashed rgba(255,255,255,0.3);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+      opacity: 0.7;
+    }
+    
+    .cooldown-overlay {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255,0,0,0.8);
+      color: white;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    
     .market-content {
       background: linear-gradient(145deg, #FFA726, #FFB74D);
       border: 3px solid var(--treasure-gold);
@@ -671,6 +881,253 @@
       background: #666;
       cursor: not-allowed;
       opacity: 0.6;
+    }
+    
+    /* Player and Enemy System */
+    .player-character {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      font-size: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,215,0,0.5);
+    }
+    
+    .player-character:hover {
+      transform: scale(1.1);
+      background: rgba(255,215,0,0.3);
+    }
+    
+    .enemy-character {
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      font-size: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 45;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border-radius: 50%;
+      background: rgba(255,0,0,0.2);
+      border: 2px solid rgba(255,0,0,0.5);
+    }
+    
+    .enemy-character:hover {
+      transform: scale(1.1);
+      background: rgba(255,0,0,0.4);
+    }
+    
+    .player-hp-bar, .enemy-hp-bar {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 6px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 3px;
+    }
+    
+    .hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .enemy-hp {
+      background: linear-gradient(90deg, #FF4444, #FF6666);
+    }
+    
+    /* Battle Modal */
+    .battle-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .battle-content {
+      background: linear-gradient(145deg, #2C3E50, #34495E);
+      border: 3px solid var(--treasure-gold);
+      border-radius: 20px;
+      width: min(90vw, 800px);
+      max-height: 90vh;
+      overflow-y: auto;
+      color: white;
+    }
+    
+    .battle-header {
+      background: linear-gradient(90deg, var(--treasure-gold), #FFED4A, var(--treasure-gold));
+      color: #2D1B0A;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 17px 17px 0 0;
+    }
+    
+    .battle-arena {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 40px 20px;
+      gap: 20px;
+    }
+    
+    .battle-player, .battle-enemy {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .battle-character {
+      font-size: 60px;
+      margin-bottom: 10px;
+      animation: battleIdle 2s infinite ease-in-out;
+    }
+    
+    .battle-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: var(--treasure-gold);
+    }
+    
+    .battle-hp-bar {
+      width: 150px;
+      height: 10px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 5px;
+      margin: 10px auto;
+      overflow: hidden;
+    }
+    
+    .battle-stats {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+    
+    .battle-vs {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--treasure-gold);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      animation: battleVs 1.5s infinite ease-in-out;
+    }
+    
+    .battle-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .battle-btn {
+      padding: 15px 20px;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      color: white;
+    }
+    
+    .attack-btn {
+      background: linear-gradient(45deg, #E74C3C, #C0392B);
+    }
+    
+    .defend-btn {
+      background: linear-gradient(45deg, #3498DB, #2980B9);
+    }
+    
+    .skill-btn {
+      background: linear-gradient(45deg, #9B59B6, #8E44AD);
+    }
+    
+    .flee-btn {
+      background: linear-gradient(45deg, #95A5A6, #7F8C8D);
+    }
+    
+    .battle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .battle-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .battle-log {
+      max-height: 150px;
+      overflow-y: auto;
+      padding: 20px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 0 0 17px 17px;
+    }
+    
+    .battle-message {
+      margin: 5px 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .battle-message.player-action {
+      color: #4ECDC4;
+    }
+    
+    .battle-message.enemy-action {
+      color: #FF6B6B;
+    }
+    
+    .battle-message.system {
+      color: var(--treasure-gold);
+      font-style: italic;
+    }
+    
+    @keyframes battleIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    @keyframes battleVs {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+    
+    @keyframes battleAttack {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(20px); }
+      50% { transform: translateX(0); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
+    }
+    
+    @keyframes battleDamage {
+      0%, 100% { transform: translateX(0); filter: brightness(1); }
+      25% { transform: translateX(-10px); filter: brightness(1.5); }
+      50% { transform: translateX(10px); filter: brightness(0.5); }
+      75% { transform: translateX(-5px); filter: brightness(1.2); }
     }
     
     .empty-inventory, .empty-market {
@@ -758,6 +1215,10 @@
         <span>等级: <strong id="player-level">1</strong></span>
       </div>
       <div class="status-item">
+        <span class="status-icon">❤️</span>
+        <span>生命: <strong id="player-hp">100/100</strong></span>
+      </div>
+      <div class="status-item">
         <span class="status-icon">🎯</span>
         <span>单元: <strong id="current-unit">混合模式</strong></span>
       </div>
@@ -769,7 +1230,9 @@
       <div class="digging-ground">
         <div class="grass-surface"></div>
         <div class="dirt-area" id="dirt-area">
-          <!-- Treasure spots will be generated here -->
+          <!-- Player character -->
+          <div class="player-character" id="player-character">🚀</div>
+          <!-- Treasure spots and enemies will be generated here -->
         </div>
       </div>
       
@@ -792,6 +1255,9 @@
           </button>
           <button class="action-btn market-btn" id="market-btn">
             🏛️ 宝物市场
+          </button>
+          <button class="action-btn cards-btn" id="cards-btn">
+            🃏 技能卡牌
           </button>
         </div>
         
@@ -883,6 +1349,78 @@
     </div>
   </div>
 
+  <!-- Skill Cards Modal -->
+  <div class="cards-modal" id="cards-modal">
+    <div class="cards-content">
+      <div class="cards-header">
+        <span>🃏 技能卡牌</span>
+        <button class="shop-close" id="cards-close">×</button>
+      </div>
+      
+      <div class="cards-info">
+        <div class="current-coins">💰 当前金币: <span id="cards-coins">500</span></div>
+        <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+          购买并装备技能卡牌，获得特殊能力！最多同时装备3张卡牌。
+        </div>
+      </div>
+      
+      <!-- Equipped Cards Section -->
+      <div id="equipped-cards-section" style="margin: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+        <h3 style="text-align: center; margin-bottom: 15px; color: #FFD700;">⚔️ 已装备卡牌 (3/3)</h3>
+        <div class="equipped-cards-grid" id="equipped-cards-grid">
+          <!-- Equipped cards will be rendered here -->
+        </div>
+      </div>
+      
+      <!-- Available Cards Section -->
+      <div class="cards-grid" id="cards-grid">
+        <!-- Available cards will be generated here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Battle Modal -->
+  <div class="battle-modal" id="battle-modal">
+    <div class="battle-content">
+      <div class="battle-header">
+        <span>⚔️ 战斗中</span>
+      </div>
+      
+      <div class="battle-arena">
+        <div class="battle-player">
+          <div class="battle-character">🚀</div>
+          <div class="battle-name">玩家</div>
+          <div class="battle-hp-bar">
+            <div class="hp-fill" id="battle-player-hp" style="width: 100%;"></div>
+          </div>
+          <div class="battle-stats" id="battle-player-stats">HP: 100/100 | ATK: 10 | DEF: 5</div>
+        </div>
+        
+        <div class="battle-vs">️ VS</div>
+        
+        <div class="battle-enemy">
+          <div class="battle-character" id="battle-enemy-char">👾</div>
+          <div class="battle-name" id="battle-enemy-name">怪物</div>
+          <div class="battle-hp-bar">
+            <div class="hp-fill enemy-hp" id="battle-enemy-hp" style="width: 100%;"></div>
+          </div>
+          <div class="battle-stats" id="battle-enemy-stats">HP: 50/50 | ATK: 8</div>
+        </div>
+      </div>
+      
+      <div class="battle-actions" id="battle-actions">
+        <button class="battle-btn attack-btn" onclick="playerAttack()">⚔️ 攻击</button>
+        <button class="battle-btn defend-btn" onclick="playerDefend()">🛡️ 防御</button>
+        <button class="battle-btn skill-btn" onclick="useSkillInBattle()">✨ 技能</button>
+        <button class="battle-btn flee-btn" onclick="fleeBattle()">🏃 逃跑</button>
+      </div>
+      
+      <div class="battle-log" id="battle-log">
+        <div class="battle-message">遇到了野生怪物！准备战斗！</div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Game State
     const gameState = {
@@ -905,7 +1443,26 @@
       equippedTool: 'basic_hammer', // 当前装备的工具
       auxiliaryTools: [], // 辅助道具列表
       consumableItems: { energy_drink: 0 }, // 消耗品数量
-      activeEffects: [] // 当前激活的效果
+      activeEffects: [], // 当前激活的效果
+      skillCards: [], // 拥有的技能卡牌
+      equippedCards: [], // 装备的技能卡牌 (最多3张)
+      cardCooldowns: {}, // 卡牌冷却时间
+      // Battle system
+      player: {
+        x: 250,
+        y: 200,
+        hp: 100,
+        maxHp: 100,
+        level: 1,
+        exp: 0,
+        expToNext: 100,
+        attack: 10,
+        defense: 5
+      },
+      enemies: [],
+      inBattle: false,
+      currentEnemy: null,
+      battleTurn: 'player' // 'player' or 'enemy'
     };
 
     // Audio System
@@ -1090,6 +1647,169 @@
       }
     };
 
+    // Skill Cards Configuration
+    const SKILL_CARDS = {
+      // 攻击类卡牌
+      power_strike: {
+        id: 'power_strike',
+        name: '力量打击',
+        icon: '💪',
+        rarity: 'common',
+        cost: 100,
+        cooldown: 3, // 冷却回合数
+        description: '下一次挖掘的力量翻倍',
+        effect: {
+          type: 'next_dig_power',
+          multiplier: 2
+        }
+      },
+      lightning_dig: {
+        id: 'lightning_dig',
+        name: '闪电挖掘',
+        icon: '⚡',
+        rarity: 'rare',
+        cost: 200,
+        cooldown: 5,
+        description: '立即完成当前宝物的挖掘',
+        effect: {
+          type: 'instant_complete'
+        }
+      },
+      treasure_magnet: {
+        id: 'treasure_magnet',
+        name: '宝物磁铁',
+        icon: '🧲',
+        rarity: 'epic',
+        cost: 300,
+        cooldown: 8,
+        description: '吸引一个新的宝物到随机位置',
+        effect: {
+          type: 'spawn_treasure'
+        }
+      },
+      
+      // 增益类卡牌
+      golden_touch: {
+        id: 'golden_touch',
+        name: '点金术',
+        icon: '✨',
+        rarity: 'rare',
+        cost: 150,
+        cooldown: 6,
+        description: '接下来3个宝物的价值+50%',
+        effect: {
+          type: 'gold_boost',
+          multiplier: 1.5,
+          duration: 3
+        }
+      },
+      lucky_charm: {
+        id: 'lucky_charm',
+        name: '幸运符咒',
+        icon: '🍀',
+        rarity: 'common',
+        cost: 80,
+        cooldown: 4,
+        description: '增加发现稀有宝物的概率',
+        effect: {
+          type: 'luck_boost',
+          duration: 5
+        }
+      },
+      energy_surge: {
+        id: 'energy_surge',
+        name: '能量涌动',
+        icon: '🔥',
+        rarity: 'epic',
+        cost: 250,
+        cooldown: 10,
+        description: '重置所有其他卡牌的冷却时间',
+        effect: {
+          type: 'reset_cooldowns'
+        }
+      },
+
+      // 防御/工具类卡牌
+      tool_repair: {
+        id: 'tool_repair',
+        name: '工具维修',
+        icon: '🔧',
+        rarity: 'common',
+        cost: 60,
+        cooldown: 2,
+        description: '临时提升工具效率20%',
+        effect: {
+          type: 'tool_boost',
+          multiplier: 1.2,
+          duration: 3
+        }
+      },
+      treasure_vision: {
+        id: 'treasure_vision',
+        name: '宝物透视',
+        icon: '👁️',
+        rarity: 'rare',
+        cost: 180,
+        cooldown: 7,
+        description: '显示所有埋藏宝物的位置',
+        effect: {
+          type: 'reveal_treasures',
+          duration: 10
+        }
+      }
+    };
+
+    // Card rarity colors and drop rates
+    const CARD_RARITY = {
+      common: { color: '#888888', dropRate: 0.6 },
+      rare: { color: '#3498db', dropRate: 0.3 },
+      epic: { color: '#9b59b6', dropRate: 0.1 }
+    };
+
+    // Enemy Types
+    const ENEMY_TYPES = {
+      goblin: {
+        name: '哥布林',
+        icon: '👺',
+        hp: 40,
+        attack: 8,
+        defense: 2,
+        exp: 25,
+        gold: 15,
+        spawnChance: 0.4
+      },
+      orc: {
+        name: '兽人',
+        icon: '👹',
+        hp: 60,
+        attack: 12,
+        defense: 4,
+        exp: 40,
+        gold: 25,
+        spawnChance: 0.3
+      },
+      skeleton: {
+        name: '骷髅战士',
+        icon: '💀',
+        hp: 50,
+        attack: 10,
+        defense: 3,
+        exp: 30,
+        gold: 20,
+        spawnChance: 0.2
+      },
+      dragon: {
+        name: '小龙',
+        icon: '🐉',
+        hp: 100,
+        attack: 18,
+        defense: 6,
+        exp: 75,
+        gold: 50,
+        spawnChance: 0.1
+      }
+    };
+
     // Treasure Types
     const TREASURE_TYPES = ['bronze', 'silver', 'gold', 'diamond'];
     const TREASURE_VALUES = {
@@ -1163,7 +1883,26 @@
       marketModal: document.getElementById('market-modal'),
       marketClose: document.getElementById('market-close'),
       marketCoins: document.getElementById('market-coins'),
-      marketGrid: document.getElementById('market-grid')
+      marketGrid: document.getElementById('market-grid'),
+      // Cards elements
+      cardsBtn: document.getElementById('cards-btn'),
+      cardsModal: document.getElementById('cards-modal'),
+      cardsClose: document.getElementById('cards-close'),
+      cardsCoins: document.getElementById('cards-coins'),
+      cardsGrid: document.getElementById('cards-grid'),
+      equippedCardsGrid: document.getElementById('equipped-cards-grid'),
+      // Battle elements
+      playerHp: document.getElementById('player-hp'),
+      playerCharacter: document.getElementById('player-character'),
+      battleModal: document.getElementById('battle-modal'),
+      battleActions: document.getElementById('battle-actions'),
+      battleLog: document.getElementById('battle-log'),
+      battlePlayerHp: document.getElementById('battle-player-hp'),
+      battleEnemyHp: document.getElementById('battle-enemy-hp'),
+      battlePlayerStats: document.getElementById('battle-player-stats'),
+      battleEnemyStats: document.getElementById('battle-enemy-stats'),
+      battleEnemyChar: document.getElementById('battle-enemy-char'),
+      battleEnemyName: document.getElementById('battle-enemy-name')
     };
 
     // Initialize Game
@@ -1320,7 +2059,7 @@
       return words;
     }
 
-    // Enhanced dig treasure with auxiliary effects
+    // Enhanced dig treasure with auxiliary effects and card effects
     function digTreasure(spotId) {
       const spot = gameState.treasureSpots[spotId];
       if (!spot || spot.discovered) return;
@@ -1339,6 +2078,28 @@
         createHitEffect(spotId, '+1⚡', 'energy-boost');
       }
       
+      // Apply power boost card effect
+      const powerBoost = gameState.activeEffects.find(e => e.type === 'power_boost');
+      if (powerBoost) {
+        damage *= powerBoost.multiplier;
+        powerBoost.remaining--;
+        if (powerBoost.remaining <= 0) {
+          gameState.activeEffects = gameState.activeEffects.filter(e => e !== powerBoost);
+        }
+        createHitEffect(spotId, `x${powerBoost.multiplier}💪`, 'power-boost');
+      }
+      
+      // Apply tool efficiency boost
+      const toolBoost = gameState.activeEffects.find(e => e.type === 'tool_efficiency');
+      if (toolBoost) {
+        damage = Math.ceil(damage * toolBoost.multiplier);
+        toolBoost.remaining--;
+        if (toolBoost.remaining <= 0) {
+          gameState.activeEffects = gameState.activeEffects.filter(e => e !== toolBoost);
+        }
+        createHitEffect(spotId, '+🔧', 'tool-boost');
+      }
+      
       damage = Math.min(damage, spot.hitsRemaining);
       spot.hitsRemaining -= damage;
       
@@ -1352,6 +2113,9 @@
       if (spot.hitsRemaining <= 0) {
         // Treasure discovered!
         spot.discovered = true;
+        
+        // Reduce card cooldowns
+        reduceCardCooldowns();
         
         // Play treasure found sound
         setTimeout(() => {
@@ -1371,7 +2135,16 @@
       if (effectType === 'energy-boost') {
         effect.textContent = damage;
         effect.style.color = '#FFD700';
+        effect.style.fontSize = '18px';
+      } else if (effectType === 'power-boost') {
+        effect.textContent = damage;
+        effect.style.color = '#FF6B35';
         effect.style.fontSize = '20px';
+        effect.style.fontWeight = 'bold';
+      } else if (effectType === 'tool-boost') {
+        effect.textContent = damage;
+        effect.style.color = '#4ECDC4';
+        effect.style.fontSize = '16px';
       } else {
         effect.textContent = '-' + damage;
       }
@@ -1448,7 +2221,19 @@
       const spot = gameState.currentTreasure;
       if (!spot) return;
       
-      gameState.coins += spot.value;
+      let goldValue = spot.value;
+      
+      // Apply gold multiplier card effect
+      const goldBoost = gameState.activeEffects.find(e => e.type === 'gold_multiplier');
+      if (goldBoost) {
+        goldValue = Math.floor(goldValue * goldBoost.multiplier);
+        goldBoost.remaining--;
+        if (goldBoost.remaining <= 0) {
+          gameState.activeEffects = gameState.activeEffects.filter(e => e !== goldBoost);
+        }
+      }
+      
+      gameState.coins += goldValue;
       gameState.treasuresFound++;
       gameState.inventory.push(spot.word);
       
@@ -1456,7 +2241,8 @@
       playSound('success');
       setTimeout(() => playSound('coin'), 300);
       
-      elements.learningFeedback.textContent = `🎉 恭喜！获得宝藏"${spot.word.name}"！+${spot.value}金币`;
+      const bonusText = goldValue > spot.value ? ` (点金术加成!)` : '';
+      elements.learningFeedback.textContent = `🎉 恭喜！获得宝藏"${spot.word.name}"！+${goldValue}金币${bonusText}`;
       elements.learningFeedback.className = 'feedback success';
       
       updateUI();
@@ -1471,7 +2257,8 @@
     function updateUI() {
       elements.coins.textContent = gameState.coins;
       elements.treasuresFound.textContent = gameState.treasuresFound;
-      elements.playerLevel.textContent = gameState.playerLevel;
+      elements.playerLevel.textContent = gameState.player.level;
+      elements.playerHp.textContent = `${gameState.player.hp}/${gameState.player.maxHp}`;
       
       // Update current tool display
       const currentTool = TOOLS[gameState.equippedTool];
@@ -1482,6 +2269,12 @@
       
       // Update auxiliary tools display
       renderAuxiliaryTools();
+      
+      // Update player character position
+      if (elements.playerCharacter) {
+        elements.playerCharacter.style.left = gameState.player.x + 'px';
+        elements.playerCharacter.style.top = gameState.player.y + 'px';
+      }
     }
 
     // Render auxiliary tools panel
@@ -1897,18 +2690,26 @@
       }, 100);
     }
 
-    // Enhanced treasure creation with auxiliary effects
+    // Enhanced treasure creation with auxiliary effects and card effects
     function enhancedCreateTreasureSpot(id, maxWidth, maxHeight) {
       let words = getAllWords();
+      let rarityBoost = false;
       
-      // Lucky charm effect - increase rare treasure chance
+      // Lucky charm auxiliary tool effect
       if (gameState.auxiliaryTools.includes('lucky_charm')) {
-        const rarityBoost = Math.random() < 0.25; // 25% chance
-        if (rarityBoost) {
-          // Filter to higher value words
-          words = words.filter(w => w.value >= 100);
-          if (words.length === 0) words = getAllWords();
-        }
+        rarityBoost = Math.random() < 0.25; // 25% chance
+      }
+      
+      // Luck boost card effect
+      const luckEffect = gameState.activeEffects.find(e => e.type === 'luck_boost');
+      if (luckEffect) {
+        rarityBoost = rarityBoost || Math.random() < 0.40; // 40% chance with card
+      }
+      
+      if (rarityBoost) {
+        // Filter to higher value words
+        words = words.filter(w => w.value >= 100);
+        if (words.length === 0) words = getAllWords();
       }
       
       const word = words[Math.floor(Math.random() * words.length)];
@@ -1984,6 +2785,317 @@
       }
     }
 
+    // Skill Cards Functions
+    function openCards() {
+      elements.cardsModal.style.display = 'flex';
+      elements.cardsCoins.textContent = gameState.coins;
+      renderSkillCards();
+    }
+
+    function closeCards() {
+      elements.cardsModal.style.display = 'none';
+    }
+
+    function renderSkillCards() {
+      renderEquippedCards();
+      renderAvailableCards();
+    }
+
+    function renderEquippedCards() {
+      const equippedHTML = [];
+      
+      for (let i = 0; i < 3; i++) {
+        const equippedCard = gameState.equippedCards[i];
+        if (equippedCard) {
+          const card = SKILL_CARDS[equippedCard];
+          const cooldown = gameState.cardCooldowns[equippedCard] || 0;
+          const canUse = cooldown === 0;
+          
+          equippedHTML.push(`
+            <div class="skill-card equipped ${card.rarity}" style="position: relative;">
+              <span class="skill-card-icon">${card.icon}</span>
+              <div class="skill-card-name">${card.name}</div>
+              <div class="skill-card-description">${card.description}</div>
+              <div class="skill-card-cooldown">冷却: ${card.cooldown}回合</div>
+              ${cooldown > 0 ? `<div class="cooldown-overlay">${cooldown}</div>` : ''}
+              <button class="skill-card-btn ${canUse ? 'use' : 'on-cooldown'}" ${!canUse ? 'disabled' : ''} onclick="useSkillCard('${card.id}')">
+                ${canUse ? '使用' : `冷却中(${cooldown})`}
+              </button>
+              <button class="skill-card-btn unequip" onclick="unequipCard(${i})" style="margin-top: 5px;">卸下</button>
+            </div>
+          `);
+        } else {
+          equippedHTML.push(`
+            <div class="empty-slot">
+              <div style="color: rgba(255,255,255,0.5); font-size: 12px;">
+                空卡槽<br>
+                <span style="font-size: 20px;">⬜</span>
+              </div>
+            </div>
+          `);
+        }
+      }
+      
+      elements.equippedCardsGrid.innerHTML = equippedHTML.join('');
+    }
+
+    function renderAvailableCards() {
+      const cardsHTML = Object.entries(SKILL_CARDS).map(([cardId, card]) => {
+        const isOwned = gameState.skillCards.includes(cardId);
+        const isEquipped = gameState.equippedCards.includes(cardId);
+        const canAfford = gameState.coins >= card.cost;
+        const rarity = CARD_RARITY[card.rarity];
+        
+        let cardClass = `skill-card ${card.rarity}`;
+        if (isOwned) cardClass += ' owned';
+        if (isEquipped) cardClass += ' equipped';
+        
+        let buttonHTML = '';
+        if (!isOwned) {
+          buttonHTML = `
+            <div class="skill-card-price">💰 ${card.cost} 金币</div>
+            <button class="skill-card-btn" ${!canAfford ? 'disabled' : ''} onclick="buySkillCard('${cardId}')">
+              ${canAfford ? '购买' : '金币不足'}
+            </button>
+          `;
+        } else if (!isEquipped && gameState.equippedCards.length < 3) {
+          buttonHTML = `
+            <div class="skill-card-price">✅ 已拥有</div>
+            <button class="skill-card-btn equip" onclick="equipCard('${cardId}')">装备</button>
+          `;
+        } else if (!isEquipped) {
+          buttonHTML = `
+            <div class="skill-card-price">✅ 已拥有</div>
+            <button class="skill-card-btn" disabled>卡槽已满</button>
+          `;
+        } else {
+          buttonHTML = `
+            <div class="skill-card-price">✅ 已装备</div>
+            <button class="skill-card-btn unequip" onclick="unequipCardById('${cardId}')">卸下</button>
+          `;
+        }
+        
+        return `
+          <div class="${cardClass}">
+            <span class="skill-card-icon">${card.icon}</span>
+            <div class="skill-card-name">${card.name}</div>
+            <div class="skill-card-description">${card.description}</div>
+            <div class="skill-card-cooldown">冷却: ${card.cooldown}回合</div>
+            ${buttonHTML}
+          </div>
+        `;
+      }).join('');
+      
+      elements.cardsGrid.innerHTML = cardsHTML;
+    }
+
+    function buySkillCard(cardId) {
+      const card = SKILL_CARDS[cardId];
+      if (!card || gameState.coins < card.cost || gameState.skillCards.includes(cardId)) {
+        playSound('error');
+        return;
+      }
+      
+      gameState.coins -= card.cost;
+      gameState.skillCards.push(cardId);
+      
+      playSound('coin');
+      updateUI();
+      renderSkillCards();
+      
+      setTimeout(() => {
+        alert(`🎉 成功获得技能卡牌 ${card.name}！`);
+      }, 100);
+    }
+
+    function equipCard(cardId) {
+      if (gameState.equippedCards.length >= 3 || gameState.equippedCards.includes(cardId) || !gameState.skillCards.includes(cardId)) {
+        playSound('error');
+        return;
+      }
+      
+      gameState.equippedCards.push(cardId);
+      playSound('success');
+      renderSkillCards();
+    }
+
+    function unequipCard(slotIndex) {
+      if (slotIndex >= 0 && slotIndex < gameState.equippedCards.length) {
+        gameState.equippedCards.splice(slotIndex, 1);
+        playSound('click');
+        renderSkillCards();
+      }
+    }
+
+    function unequipCardById(cardId) {
+      const index = gameState.equippedCards.indexOf(cardId);
+      if (index !== -1) {
+        gameState.equippedCards.splice(index, 1);
+        playSound('click');
+        renderSkillCards();
+      }
+    }
+
+    function useSkillCard(cardId) {
+      const card = SKILL_CARDS[cardId];
+      if (!card || !gameState.equippedCards.includes(cardId)) {
+        playSound('error');
+        return;
+      }
+      
+      // Check cooldown
+      const cooldown = gameState.cardCooldowns[cardId] || 0;
+      if (cooldown > 0) {
+        playSound('error');
+        alert(`技能还在冷却中，剩余 ${cooldown} 回合`);
+        return;
+      }
+      
+      // Apply card effect
+      applyCardEffect(card);
+      
+      // Set cooldown
+      gameState.cardCooldowns[cardId] = card.cooldown;
+      
+      playSound('magic');
+      updateUI();
+      renderSkillCards();
+    }
+
+    function applyCardEffect(card) {
+      const effect = card.effect;
+      
+      switch(effect.type) {
+        case 'next_dig_power':
+          gameState.activeEffects.push({
+            type: 'power_boost',
+            multiplier: effect.multiplier,
+            remaining: 1
+          });
+          alert(`💪 ${card.name} 已激活！下次挖掘力量翻倍！`);
+          break;
+          
+        case 'instant_complete':
+          // Complete current treasure instantly if any
+          const activeTreasures = gameState.treasureSpots.filter(spot => !spot.discovered && spot.hitsRemaining < spot.hitsRequired);
+          if (activeTreasures.length > 0) {
+            const targetSpot = activeTreasures[0];
+            targetSpot.hitsRemaining = 0;
+            targetSpot.discovered = true;
+            playSound('treasure_found');
+            setTimeout(() => showLearningModal(targetSpot), 500);
+            alert(`⚡ ${card.name} 已激活！瞬间完成了一个宝物的挖掘！`);
+          } else {
+            alert(`⚡ ${card.name} 已激活，但没有正在挖掘的宝物。`);
+          }
+          break;
+          
+        case 'spawn_treasure':
+          // Add a new treasure to empty spot
+          const maxSpots = gameState.treasureSpots.length + 5;
+          if (gameState.treasureSpots.filter(spot => !spot.discovered).length < maxSpots) {
+            const newSpot = enhancedCreateTreasureSpot(gameState.treasureSpots.length, 500, 500);
+            gameState.treasureSpots.push(newSpot);
+            
+            // Create visual element
+            const spotElement = document.createElement('div');
+            spotElement.className = `treasure-spot treasure-${newSpot.type}`;
+            spotElement.style.left = newSpot.x + 'px';
+            spotElement.style.top = newSpot.y + 'px';
+            spotElement.dataset.spotId = newSpot.id;
+            
+            const buriedDiv = document.createElement('div');
+            buriedDiv.className = 'treasure-buried';
+            buriedDiv.textContent = newSpot.word.icon;
+            spotElement.appendChild(buriedDiv);
+            
+            elements.dirtArea.appendChild(spotElement);
+            spotElement.addEventListener('click', () => digTreasure(newSpot.id));
+            
+            alert(`🧲 ${card.name} 已激活！吸引了一个新宝物！`);
+          }
+          break;
+          
+        case 'gold_boost':
+          gameState.activeEffects.push({
+            type: 'gold_multiplier',
+            multiplier: effect.multiplier,
+            remaining: effect.duration
+          });
+          alert(`✨ ${card.name} 已激活！接下来${effect.duration}个宝物的价值将增加${Math.round((effect.multiplier-1)*100)}%！`);
+          break;
+          
+        case 'luck_boost':
+          gameState.activeEffects.push({
+            type: 'luck_boost',
+            remaining: effect.duration
+          });
+          alert(`🍀 ${card.name} 已激活！接下来${effect.duration}回合将有更高概率发现稀有宝物！`);
+          break;
+          
+        case 'reset_cooldowns':
+          // Reset all other card cooldowns
+          Object.keys(gameState.cardCooldowns).forEach(cardId => {
+            if (cardId !== card.id) {
+              gameState.cardCooldowns[cardId] = 0;
+            }
+          });
+          alert(`🔥 ${card.name} 已激活！所有其他技能卡的冷却时间已重置！`);
+          break;
+          
+        case 'tool_boost':
+          gameState.activeEffects.push({
+            type: 'tool_efficiency',
+            multiplier: effect.multiplier,
+            remaining: effect.duration
+          });
+          alert(`🔧 ${card.name} 已激活！工具效率提升${Math.round((effect.multiplier-1)*100)}%，持续${effect.duration}次挖掘！`);
+          break;
+          
+        case 'reveal_treasures':
+          // Show all treasure locations temporarily
+          gameState.activeEffects.push({
+            type: 'treasure_vision',
+            remaining: effect.duration
+          });
+          // Highlight all treasures
+          gameState.treasureSpots.forEach((spot, index) => {
+            if (!spot.discovered) {
+              const spotElement = document.querySelector(`[data-spot-id="${index}"]`);
+              if (spotElement) {
+                spotElement.style.boxShadow = '0 0 20px #FFD700';
+                spotElement.style.border = '3px solid #FFD700';
+              }
+            }
+          });
+          alert(`👁️ ${card.name} 已激活！所有宝物位置已显现，持续${effect.duration}回合！`);
+          
+          // Remove highlight after duration
+          setTimeout(() => {
+            gameState.treasureSpots.forEach((spot, index) => {
+              const spotElement = document.querySelector(`[data-spot-id="${index}"]`);
+              if (spotElement) {
+                spotElement.style.boxShadow = '';
+                spotElement.style.border = '';
+              }
+            });
+          }, effect.duration * 10000); // Assume each "round" is 10 seconds
+          break;
+          
+        default:
+          console.log('Unknown card effect:', effect.type);
+      }
+    }
+
+    // Reduce card cooldowns after each treasure discovery
+    function reduceCardCooldowns() {
+      Object.keys(gameState.cardCooldowns).forEach(cardId => {
+        if (gameState.cardCooldowns[cardId] > 0) {
+          gameState.cardCooldowns[cardId]--;
+        }
+      });
+    }
+
     // Make functions global for onclick handlers
     window.buyTool = buyTool;
     window.equipTool = equipTool;
@@ -1993,6 +3105,11 @@
     window.enhancedSellTreasure = enhancedSellTreasure;
     window.useEnergyDrink = useEnergyDrink;
     window.useConsumable = useConsumable;
+    window.buySkillCard = buySkillCard;
+    window.equipCard = equipCard;
+    window.unequipCard = unequipCard;
+    window.unequipCardById = unequipCardById;
+    window.useSkillCard = useSkillCard;
 
     // Speech Recognition (simplified)
     function setupSpeechRecognition() {
@@ -2143,6 +3260,23 @@
       elements.marketModal.addEventListener('click', (e) => {
         if (e.target === elements.marketModal) {
           closeMarket();
+        }
+      });
+      
+      elements.cardsBtn.addEventListener('click', () => {
+        playSound('click');
+        openCards();
+      });
+      
+      elements.cardsClose.addEventListener('click', () => {
+        playSound('click');
+        closeCards();
+      });
+      
+      // Close cards when clicking outside
+      elements.cardsModal.addEventListener('click', (e) => {
+        if (e.target === elements.cardsModal) {
+          closeCards();
         }
       });
     }
